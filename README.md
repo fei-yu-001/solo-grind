@@ -62,9 +62,11 @@ cd frontend && npm install && npm run dev
 
 ```bash
 bash scripts/e2e-api.sh                              # 接口 51 条断言
+bash scripts/e2e-exam-room.sh                        # 考生答题流程 18 条
 bash scripts/e2e-extra.sh                            # 缓存/判分/批量/权限 18 条
 node scripts/ui-check.mjs http://127.0.0.1:5173      # 六个页面巡检 + 截图
 node scripts/ui-flow.mjs  http://127.0.0.1:5173      # 组卷端到端（真实鼠标事件）
+node scripts/ui-exam-room.mjs http://127.0.0.1:5173  # 考试中心→答题→交卷→成绩明细
 ```
 
 验收记录见 `docs/VERIFY.md`。

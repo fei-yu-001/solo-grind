@@ -41,7 +41,7 @@
 
 ## 四、功能开发要求
 
-四个核心功能，每个都有「增、删、改、条件查询、分页查询」：
+四个核心功能（外加考生端在线答题，共五个模块），每个都有「增、删、改、条件查询、分页查询」：
 
 | 核心功能 | 增 | 删 | 改 | 条件查询 + 分页 |
 | --- | --- | --- | --- | --- |
@@ -49,6 +49,7 @@
 | 题目管理 | `POST /api/questions`（带 tagIds） | `DELETE /api/questions/{id}`（被引用 409） | `PUT`、`PATCH /api/questions/batch` 批量移动 | `GET /api/questions?bankId&type&keyword&difficulty&tagId&page&size` |
 | 试卷管理 | `POST /api/papers`（组卷，事务） | `DELETE /api/papers/{id}` | `PUT /api/papers/{id}`（仅草稿）、`publish`/`close` 状态流转 | `GET /api/papers?keyword&status&bankId&page&size` |
 | 成绩与作答 | `POST /api/answers/submit`（交卷判分） | `DELETE /api/scores/{paperId}/{userId}` | 交卷即写入，撤销后重交 | `GET /api/scores?paperId&keyword&page&size` |
+| 考生在线答题 | 交卷 `POST /api/answers/submit` | 撤销成绩（管理员） | 交卷即写库 | `GET /api/exams/available`、`GET /api/scores/mine`（分页） |
 
 Redis 应用（任务书要求至少一项，本项目三项）：
 
