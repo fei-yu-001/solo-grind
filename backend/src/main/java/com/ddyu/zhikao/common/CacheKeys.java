@@ -7,10 +7,10 @@ public final class CacheKeys {
 
     /** 登录令牌 */
     public static final String LOGIN_TOKEN = "login:token:";
-    /** 分类字典 */
-    public static final String DICT_CATEGORIES = "dict:categories";
-    /** 热门图书前缀，后面拼 limit */
-    public static final String HOT_BOOKS = "cache:hot:books:";
+    /** 题库字典 */
+    public static final String DICT_BANKS = "dict:banks";
+    /** 成绩排行榜前缀，后面拼 paperId */
+    public static final String RANKING = "cache:ranking:";
     /** 空值标记，用于防缓存穿透 */
     public static final String EMPTY_VALUE = "__EMPTY__";
 
@@ -21,7 +21,7 @@ public final class CacheKeys {
         return LOGIN_TOKEN + token;
     }
 
-    public static String hotBooks(int limit) {
-        return HOT_BOOKS + limit;
+    public static String ranking(Long paperId) {
+        return RANKING + paperId;
     }
 }
