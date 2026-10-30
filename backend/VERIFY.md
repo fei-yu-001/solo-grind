@@ -1,6 +1,6 @@
 # 后端验证记录（VERIFY）
 
-验证时间：2026-10-30 15:30 ~ 15:45（本机 Windows 11，JDK 21，Maven 3.9）
+验证时间：2026-10-30 15:30 ~ 16:20（本机 Windows 11，JDK 21，Maven 3.9）
 
 环境前提：MySQL `zhikao` 库已灌初始数据（185 题 / 2 题库 / 2 卷 / 170 作答），Redis 6379 无密码。
 启动方式：`mvn -B spring-boot:run`（8080）。
@@ -87,7 +87,39 @@ $ bash scripts/e2e-api.sh
 结果: 51 通过, 0 失败
 ```
 
-## 3. 手工补测（scripts/e2e-supplement.py，10 条断言）
+## 3. 判断题存修格式修复后的复验（fix: judge answer 存储统一为 "A"/"B" 字符串）
+
+修复内容：toAnswerJson 删掉 judge 布尔特判（与单选一样存 JSON 字符串）；
+parseAnswer 按 String 读、读失败兼容历史 true/false 映射成 A/B（Question/Paper/Answer/Score 四处）；
+toOptionsJson 判断题默认 [{key:A,text:对},{key:B,text:错}]，前端传了用前端的；
+QuestionForm 的 options 不再 @NotNull，判断题可不传。
+
+接口实测：
+```
+GET /api/questions?type=judge&page=1&size=1
+  -> type= judge answer= 'B'（干净字符串，不带引号）
+GET /api/papers/1
+  -> seq=1 type=judge answer='B'；seq=2 type=judge answer='A'
+```
+
+e2e-api.sh（脚本更新后首跑，无需 curl 包装器）：51 通过, 0 失败（输出同第 2 节）。
+
+判断题交卷判分手工验（scripts/e2e-judge-check.py，10 条断言全过）：
+```
+  [ok]   组卷成功
+  [ok]   试卷里判断题 answer 是干净字符串
+  [ok]   判断题字符串作答交卷不报 500
+  [ok]   全对 totalScore=3
+  [ok]   correctCount=3
+  [ok]   blankCount=0
+  [ok]   明细 answer 是干净字符串
+  [ok]   明细 chosen 是干净字符串
+  [ok]   1 对 2 错 totalScore=1
+  [ok]   correctCount=1
+结果: 10 通过, 0 失败
+```
+
+## 4. 手工补测（scripts/e2e-supplement.py，10 条断言）
 
 脚本没覆盖的四项 + 判分边界，`python scripts/e2e-supplement.py`（urllib 直连 8080）：
 
@@ -122,7 +154,7 @@ $ bash scripts/e2e-api.sh
   POST/DELETE /api/tags、DELETE /api/scores/{paperId}/{userId}
 - **分页边界抽查**：题目 total=187 时（含临时题），size=10 第 19 页 7 条、第 20 页 0 条，total 与页大小对得上
 
-## 4. Redis 缓存日志（服务端 /tmp/zhikao-server.log 摘录）
+## 5. Redis 缓存日志（服务端 /tmp/zhikao-server.log 摘录）
 
 ```
 [cache] 登录令牌写入 token=667115f6... admin=admin
@@ -137,7 +169,7 @@ $ bash scripts/e2e-api.sh
 字典 TTL 3600s、空值标记 60s（`dict:banks` 存 `__EMPTY__`），排行榜 TTL 300s（`cache:ranking:<paperId>`），
 交卷/撤销成绩后删 `cache:ranking:*`，题库增删改后删 `dict:banks`。
 
-## 5. 数据一致性
+## 6. 数据一致性
 
 跑完所有验证后数据库与初始状态一致，无残留：
 
@@ -149,7 +181,7 @@ q    b    p    a    u    t
 185  2    2    170  4    10
 ```
 
-## 6. 实现说明（对照任务书）
+## 7. 实现说明（对照任务书）
 
 - 分页 SQL 均无一对多 join：question/bank/paper/score 分页只查主表行，
   标签用二次 `question_tag IN` 查询在 Service 装配；试卷题目明细只用于单卷详情
@@ -160,7 +192,7 @@ q    b    p    a    u    t
   仅 DRAFT 可改/可发布、仅 PUBLISHED 可交卷/可结束、同卷同考生仅一次、非 ADMIN 403
 - stats 的 questionCount 是 `select count(*) from question` 全表数，多少报多少，无特殊处理
 
-## 7. 顺带修正的骨架问题（超出 backend/** 业务代码的最小改动）
+## 8. 顺带修正的骨架问题（超出 backend/** 业务代码的最小改动）
 
 - `common/LoginUser.java`：skeleton 版只有 id/username/realName（图书系统遗留），
   没有 nickname/role，403 判断和契约 3 的身份字段都无法实现 → 改为 id/username/nickname/role

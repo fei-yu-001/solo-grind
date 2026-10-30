@@ -197,7 +197,12 @@ public class ScoreServiceImpl implements ScoreService {
         }
         try {
             if ("judge".equals(type)) {
-                return Boolean.TRUE.equals(objectMapper.readValue(json, Boolean.class)) ? "A" : "B";
+                // 判断题答案存 JSON 字符串 "A"/"B"；历史布尔 true/false 读失败时映射成 A/B
+                try {
+                    return objectMapper.readValue(json, String.class);
+                } catch (Exception ignored) {
+                    return Boolean.TRUE.equals(objectMapper.readValue(json, Boolean.class)) ? "A" : "B";
+                }
             }
             return objectMapper.readValue(json, Object.class);
         } catch (Exception e) {

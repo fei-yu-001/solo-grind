@@ -138,9 +138,17 @@ public class AnswerServiceImpl implements AnswerService {
         try {
             switch (type) {
                 case "single", "judge" -> {
-                    String expected = "judge".equals(type)
-                            ? (Boolean.TRUE.equals(objectMapper.readValue(answerJson, Boolean.class)) ? "A" : "B")
-                            : objectMapper.readValue(answerJson, String.class);
+                    String expected;
+                    if ("judge".equals(type)) {
+                        // 判断题答案存 JSON 字符串 "A"/"B"；历史布尔 true/false 兼容映射成 A/B
+                        try {
+                            expected = objectMapper.readValue(answerJson, String.class);
+                        } catch (Exception ignored) {
+                            expected = Boolean.TRUE.equals(objectMapper.readValue(answerJson, Boolean.class)) ? "A" : "B";
+                        }
+                    } else {
+                        expected = objectMapper.readValue(answerJson, String.class);
+                    }
                     return expected.equals(String.valueOf(chosen)) ? fullScore : 0;
                 }
                 case "multi" -> {

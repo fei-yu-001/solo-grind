@@ -181,7 +181,13 @@ public class QuestionServiceImpl implements QuestionService {
     private String toOptionsJson(QuestionForm form) {
         try {
             if ("judge".equals(form.getType())) {
-                return objectMapper.writeValueAsString(List.of(true, false));
+                // 判断题选项：前端传了就用前端的，没传默认 A 对 / B 错
+                List<QuestionForm.QuestionOptionForm> options = form.getOptions();
+                if (options == null || options.isEmpty()) {
+                    return objectMapper.writeValueAsString(List.of(
+                            judgeOption("A", "对"), judgeOption("B", "错")));
+                }
+                return objectMapper.writeValueAsString(options);
             }
             return objectMapper.writeValueAsString(form.getOptions());
         } catch (Exception e) {
@@ -189,11 +195,16 @@ public class QuestionServiceImpl implements QuestionService {
         }
     }
 
+    private QuestionForm.QuestionOptionForm judgeOption(String key, String text) {
+        QuestionForm.QuestionOptionForm option = new QuestionForm.QuestionOptionForm();
+        option.setKey(key);
+        option.setText(text);
+        return option;
+    }
+
     private String toAnswerJson(String type, Object answer) {
         try {
-            if ("judge".equals(type)) {
-                return "A".equals(answer) ? "true" : "false";
-            }
+            // 判断题和单选一样存 JSON 字符串 "A"/"B"（契约 4.3）
             return objectMapper.writeValueAsString(answer);
         } catch (Exception e) {
             throw new IllegalStateException("答案序列化失败", e);
@@ -249,7 +260,7 @@ public class QuestionServiceImpl implements QuestionService {
             return List.of();
         }
         try {
-            // 判断题在库里存的是 [true, false]，转成 A 对 / B 错
+            // 兼容历史布尔存法 [true, false]，转成 A 对 / B 错
             if (json.contains("true") || json.contains("false")) {
                 return List.of(optionVO("A", "对"), optionVO("B", "错"));
             }
@@ -274,7 +285,12 @@ public class QuestionServiceImpl implements QuestionService {
         }
         try {
             if ("judge".equals(type)) {
-                return Boolean.TRUE.equals(objectMapper.readValue(json, Boolean.class)) ? "A" : "B";
+                // 判断题答案存 JSON 字符串 "A"/"B"；历史布尔 true/false 读失败时映射成 A/B
+                try {
+                    return objectMapper.readValue(json, String.class);
+                } catch (Exception ignored) {
+                    return Boolean.TRUE.equals(objectMapper.readValue(json, Boolean.class)) ? "A" : "B";
+                }
             }
             if ("multi".equals(type)) {
                 return objectMapper.readValue(json, new TypeReference<List<String>>() {

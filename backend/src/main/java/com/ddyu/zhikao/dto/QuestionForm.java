@@ -25,7 +25,7 @@ public class QuestionForm {
     @NotBlank(message = "题干不能为空")
     private String stem;
 
-    @NotNull(message = "选项不能为空")
+    /** 单选/多选必传；判断题可不传，后端默认 A 对 / B 错 */
     @Valid
     private List<QuestionOptionForm> options;
 

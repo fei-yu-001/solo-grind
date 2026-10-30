@@ -266,7 +266,7 @@ public class PaperServiceImpl implements PaperService {
             return List.of();
         }
         try {
-            // 判断题在库里存的是 [true, false]，转成 A 对 / B 错
+            // 兼容历史布尔存法 [true, false]，转成 A 对 / B 错
             if (json.contains("true") || json.contains("false")) {
                 return List.of(optionVO("A", "对"), optionVO("B", "错"));
             }
@@ -291,7 +291,12 @@ public class PaperServiceImpl implements PaperService {
         }
         try {
             if ("judge".equals(type)) {
-                return Boolean.TRUE.equals(objectMapper.readValue(json, Boolean.class)) ? "A" : "B";
+                // 判断题答案存 JSON 字符串 "A"/"B"；历史布尔 true/false 读失败时映射成 A/B
+                try {
+                    return objectMapper.readValue(json, String.class);
+                } catch (Exception ignored) {
+                    return Boolean.TRUE.equals(objectMapper.readValue(json, Boolean.class)) ? "A" : "B";
+                }
             }
             if ("multi".equals(type)) {
                 return objectMapper.readValue(json, new TypeReference<List<String>>() {
