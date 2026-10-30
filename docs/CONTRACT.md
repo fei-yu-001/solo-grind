@@ -208,6 +208,51 @@
 - 未作答：0 分，计入 `blankCount`
 - 满分 = 各题分值之和，就是 `exam_paper.total_score`
 
+
+## 4.8 考生端考试（在线答题）
+
+考生要能自己挑一张已发布试卷、在线做题、交卷看分。前端答题页必须**拿不到答案**，答案只在交卷后的成绩明细里出现。
+
+| 方法 | 路径 | 入参 | 出参 data |
+| --- | --- | --- | --- |
+| GET | `/api/exams/available` | 无 | `ExamCardVO[]` |
+| GET | `/api/exams/{paperId}/questions` | 无 | `ExamPaperViewVO`（**不含 answer / analysis**） |
+| GET | `/api/scores/mine` | `page` `size` | 分页 `ScoreVO` |
+
+`ExamCardVO`：
+
+```json
+{
+  "paperId": 1, "title": "第17届市调大赛·本科组全真模考", "bankName": "...",
+  "questionCount": 85, "totalScore": 100, "durationSec": 6000,
+  "myScore": null, "mySubmittedAt": null
+}
+```
+
+`myScore` / `mySubmittedAt`：当前考生已交过这张卷子就填分数和交卷时间，没交过就是 null。
+
+`ExamPaperViewVO`：
+
+```json
+{
+  "paperId": 1, "title": "...", "durationSec": 6000, "totalScore": 100, "questionCount": 85,
+  "questions": [
+    { "seq": 1, "questionId": 77, "type": "judge", "typeText": "判断题",
+      "stem": "...", "options": [{"key":"A","text":"对"},{"key":"B","text":"错"}], "score": 1 }
+  ]
+}
+```
+
+规则：
+
+1. `/api/exams/available` 只返回 `status = PUBLISHED` 的卷子，按 id 倒序。
+2. `/api/exams/{paperId}/questions` 遇到非 PUBLISHED 返回 409；当前考生已经交过这张卷子也返回 409，`message` 为「你已经交过这份试卷了」。
+3. 返回的题目**绝不能带 answer 和 analysis**，这是防作弊的硬要求，Service 里单独组装视图对象，不要复用 QuestionVO。
+4. `/api/scores/mine` 只返回当前登录考生自己的成绩，分页。
+5. `GET /api/scores/{paperId}/{userId}`：考生只能看自己的，看别人的返回 403；管理员不受限。
+6. 这三个接口对 STUDENT 开放，不需要 ADMIN 权限。
+7. 交卷仍然用 `POST /api/answers/submit`，判分规则见 4.7，不用改。
+
 ## 5. Redis 使用点
 
 | 场景 | key | 结构 | TTL | 说明 |
