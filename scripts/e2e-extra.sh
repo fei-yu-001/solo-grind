@@ -51,6 +51,16 @@ login() {
 TOKEN=$(login admin admin123 | py "d['data']['token']")
 STU=$(login student02 student123 | py "d['data']['token']")
 
+echo "== 0. 清理上一次中断留下的探针数据"
+PAPERS=$(api GET '/api/papers?page=1&size=100' | py "' '.join(str(x['id']) for x in d['data']['records'] if x['title'].startswith(('E2E-','GRADE-PROBE','DBG-')))")
+for pid in $PAPERS; do
+  api POST "/api/papers/$pid/close" >/dev/null 2>&1
+  api DELETE "/api/papers/$pid" >/dev/null 2>&1
+done
+BANKS=$(api GET '/api/banks?page=1&size=100' | py "' '.join(str(x['id']) for x in d['data']['records'] if x['name'].startswith(('E2E-','BATCH-','CACHE-PROBE')))")
+for bid in $BANKS; do api DELETE "/api/banks/$bid" >/dev/null 2>&1; done
+echo "  清掉试卷 $PAPERS | 题库 $BANKS"
+
 echo "== 1. 判断题答案格式（契约要求 A/B 字符串，不带引号）"
 JUDGE_TMP="$(mktemp)"
 printf '%s' "$(api GET "/api/questions?type=judge&page=1&size=1")" > "$JUDGE_TMP"
