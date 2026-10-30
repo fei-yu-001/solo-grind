@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ddyu.zhikao.mapper.PaperMapper">
+
+    <sql id="paperVoColumns">
+        p.id,
+        p.title,
+        p.bank_id AS bankId,
+        b.name AS bankName,
+        p.judge_count AS judgeCount,
+        p.single_count AS singleCount,
+        p.multi_count AS multiCount,
+        p.judge_score AS judgeScore,
+        p.single_score AS singleScore,
+        p.multi_score AS multiScore,
+        p.duration_sec AS durationSec,
+        p.total_score AS totalScore,
+        (SELECT COUNT(*) FROM exam_paper_question pq WHERE pq.paper_id = p.id) AS questionCount,
+        p.status,
+        DATE_FORMAT(p.created_at, '%Y-%m-%d %H:%i:%s') AS createdAt
+    </sql>
+
+    <select id="selectPaperPage" resultType="com.ddyu.zhikao.vo.PaperVO">
+        SELECT
+        <include refid="paperVoColumns"/>
+        FROM exam_paper p
+        JOIN question_bank b ON b.id = p.bank_id
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND p.title LIKE CONCAT('%', #{keyword}, '%')
+            </if>
+            <if test="status != null and status != ''">
+                AND p.status = #{status}
+            </if>
+            <if test="bankId != null">
+                AND p.bank_id = #{bankId}
+            </if>
+        </where>
+        ORDER BY p.id DESC
+    </select>
+
+    <select id="selectPaperByIds" resultType="com.ddyu.zhikao.vo.PaperVO">
+        SELECT
+        <include refid="paperVoColumns"/>
+        FROM exam_paper p
+        JOIN question_bank b ON b.id = p.bank_id
+        WHERE p.id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        ORDER BY p.id
+    </select>
+
+    <!-- 试卷题目明细，seq 即组卷顺序（判断→单选→多选），一对多 join 只用于单试卷详情，不参与分页 -->
+    <sql id="paperQuestionVoColumns">
+        pq.seq,
+        pq.score,
+        q.id,
+        q.type,
+        q.stem,
+        q.options AS optionsJson,
+        q.answer AS answerJson,
+        q.analysis
+    </sql>
+
+    <select id="selectPaperQuestions" resultType="com.ddyu.zhikao.vo.PaperQuestionVO">
+        SELECT
+        <include refid="paperQuestionVoColumns"/>
+        FROM exam_paper_question pq
+        JOIN question q ON q.id = pq.question_id
+        WHERE pq.paper_id = #{paperId}
+        ORDER BY pq.seq
+    </select>
+
+    <select id="selectPaperQuestionsByIds" resultType="com.ddyu.zhikao.vo.PaperQuestionVO">
+        SELECT
+            pq.paper_id AS paperId,
+        <include refid="paperQuestionVoColumns"/>
+        FROM exam_paper_question pq
+        JOIN question q ON q.id = pq.question_id
+        WHERE pq.paper_id IN
+        <foreach collection="paperIds" item="pid" open="(" separator="," close=")">
+            #{pid}
+        </foreach>
+        ORDER BY pq.paper_id, pq.seq
+    </select>
+
+</mapper>

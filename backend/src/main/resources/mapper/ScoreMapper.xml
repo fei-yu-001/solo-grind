@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ddyu.zhikao.mapper.ScoreMapper">
+
+    <sql id="scoreAggregates">
+        ar.paper_id AS paperId,
+        p.title AS paperTitle,
+        p.total_score AS maxScore,
+        ar.user_id AS userId,
+        u.username,
+        u.nickname,
+        SUM(ar.score) AS totalScore,
+        SUM(ar.correct = 1) AS correctCount,
+        SUM(ar.correct = 0 AND ar.chosen IS NOT NULL) AS wrongCount,
+        SUM(ar.chosen IS NULL) AS blankCount,
+        COUNT(*) AS questionCount,
+        ROUND(SUM(ar.correct = 1) / COUNT(*), 2) AS accuracy,
+        DATE_FORMAT(MAX(ar.submitted_at), '%Y-%m-%d %H:%i:%s') AS submittedAt
+    </sql>
+
+    <sql id="scoreGroupBy">
+        GROUP BY ar.paper_id, ar.user_id, p.title, p.total_score, u.username, u.nickname
+    </sql>
+
+    <select id="selectScorePage" resultType="com.ddyu.zhikao.vo.ScoreVO">
+        SELECT
+        <include refid="scoreAggregates"/>
+        FROM answer_record ar
+        JOIN exam_paper p ON p.id = ar.paper_id
+        JOIN sys_user u ON u.id = ar.user_id
+        <where>
+            <if test="paperId != null">AND ar.paper_id = #{paperId}</if>
+            <if test="keyword != null and keyword != ''">
+                AND (u.username LIKE CONCAT('%', #{keyword}, '%') OR u.nickname LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+        </where>
+        <include refid="scoreGroupBy"/>
+        ORDER BY ar.paper_id, totalScore DESC, ar.user_id
+    </select>
+
+    <select id="selectScore" resultType="com.ddyu.zhikao.vo.ScoreVO">
+        SELECT
+        <include refid="scoreAggregates"/>
+        FROM answer_record ar
+        JOIN exam_paper p ON p.id = ar.paper_id
+        JOIN sys_user u ON u.id = ar.user_id
+        WHERE ar.paper_id = #{paperId} AND ar.user_id = #{userId}
+        <include refid="scoreGroupBy"/>
+    </select>
+
+    <!-- 单份成绩的逐题明细：按 seq 排序，一对多 join 只用于单份成绩，不参与分页 -->
+    <select id="selectScoreItems" resultType="com.ddyu.zhikao.vo.ScoreDetailItemVO">
+        SELECT
+            pq.seq,
+            ar.question_id AS questionId,
+            q.type,
+            q.stem,
+            ar.chosen AS chosenJson,
+            q.answer AS answerJson,
+            ar.correct,
+            ar.score
+        FROM answer_record ar
+        JOIN exam_paper_question pq ON pq.paper_id = ar.paper_id AND pq.question_id = ar.question_id
+        JOIN question q ON q.id = ar.question_id
+        WHERE ar.paper_id = #{paperId} AND ar.user_id = #{userId}
+        ORDER BY pq.seq
+    </select>
+
+    <select id="selectRanking" resultType="map">
+        SELECT
+            ar.user_id AS userId,
+            u.nickname,
+            SUM(ar.score) AS totalScore
+        FROM answer_record ar
+        JOIN sys_user u ON u.id = ar.user_id
+        WHERE ar.paper_id = #{paperId}
+        GROUP BY ar.user_id, u.nickname
+        ORDER BY totalScore DESC, ar.user_id
+        LIMIT #{limit}
+    </select>
+
+    <select id="selectScoreStats" resultType="map">
+        SELECT
+            SUM(ar.correct = 1) AS correctSum,
+            SUM(ar.correct = 0) AS wrongSum,
+            SUM(ar.chosen IS NULL) AS blankSum,
+            COUNT(*) AS answeredSum
+        FROM answer_record ar
+    </select>
+
+</mapper>

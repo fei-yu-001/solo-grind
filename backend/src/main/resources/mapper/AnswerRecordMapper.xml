@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ddyu.zhikao.mapper.AnswerRecordMapper">
+
+    <select id="selectScore" resultType="com.ddyu.zhikao.vo.ScoreVO">
+        SELECT
+            ar.paper_id AS paperId,
+            p.title AS paperTitle,
+            p.total_score AS maxScore,
+            ar.user_id AS userId,
+            u.username,
+            u.nickname,
+            SUM(ar.score) AS totalScore,
+            SUM(ar.correct = 1) AS correctCount,
+            SUM(ar.correct = 0 AND ar.chosen IS NOT NULL) AS wrongCount,
+            SUM(ar.chosen IS NULL) AS blankCount,
+            COUNT(*) AS questionCount,
+            ROUND(SUM(ar.correct = 1) / COUNT(*), 2) AS accuracy,
+            DATE_FORMAT(MAX(ar.submitted_at), '%Y-%m-%d %H:%i:%s') AS submittedAt
+        FROM answer_record ar
+        JOIN exam_paper p ON p.id = ar.paper_id
+        JOIN sys_user u ON u.id = ar.user_id
+        WHERE ar.paper_id = #{paperId} AND ar.user_id = #{userId}
+        GROUP BY ar.paper_id, ar.user_id, p.title, p.total_score, u.username, u.nickname
+    </select>
+
+</mapper>

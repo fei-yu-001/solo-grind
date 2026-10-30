@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ddyu.zhikao.mapper.BankMapper">
+
+    <sql id="bankVoColumns">
+        b.id,
+        b.name,
+        b.group_name AS groupName,
+        b.description,
+        b.status,
+        (SELECT COUNT(*) FROM question q WHERE q.bank_id = b.id) AS questionCount,
+        DATE_FORMAT(b.created_at, '%Y-%m-%d %H:%i:%s') AS createdAt
+    </sql>
+
+    <sql id="bankWhere">
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND b.name LIKE CONCAT('%', #{keyword}, '%')
+            </if>
+            <if test="groupName != null and groupName != ''">
+                AND b.group_name = #{groupName}
+            </if>
+            <if test="status != null and status != ''">
+                AND b.status = #{status}
+            </if>
+        </where>
+    </sql>
+
+    <select id="selectBankPage" resultType="com.ddyu.zhikao.vo.BankVO">
+        SELECT
+        <include refid="bankVoColumns"/>
+        FROM question_bank b
+        <include refid="bankWhere"/>
+        ORDER BY b.id
+    </select>
+
+    <select id="selectBankByIds" resultType="com.ddyu.zhikao.vo.BankVO">
+        SELECT
+        <include refid="bankVoColumns"/>
+        FROM question_bank b
+        WHERE b.id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        ORDER BY b.id
+    </select>
+
+</mapper>

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ddyu.zhikao.mapper.QuestionMapper">
+
+    <sql id="questionVoColumns">
+        q.id,
+        q.bank_id AS bankId,
+        b.name AS bankName,
+        q.type,
+        q.stem,
+        q.options AS optionsJson,
+        q.answer AS answerJson,
+        q.analysis,
+        q.difficulty,
+        q.sort_no AS sortNo,
+        DATE_FORMAT(q.created_at, '%Y-%m-%d %H:%i:%s') AS createdAt
+    </sql>
+
+    <select id="selectQuestionPage" resultType="com.ddyu.zhikao.vo.QuestionVO">
+        SELECT
+        <include refid="questionVoColumns"/>
+        FROM question q
+        JOIN question_bank b ON b.id = q.bank_id
+        <where>
+            <if test="bankId != null">AND q.bank_id = #{bankId}</if>
+            <if test="type != null and type != ''">AND q.type = #{type}</if>
+            <if test="keyword != null and keyword != ''">AND q.stem LIKE CONCAT('%', #{keyword}, '%')</if>
+            <if test="difficulty != null">AND q.difficulty = #{difficulty}</if>
+            <if test="tagId != null">
+                AND EXISTS (SELECT 1 FROM question_tag qt WHERE qt.question_id = q.id AND qt.tag_id = #{tagId})
+            </if>
+        </where>
+        ORDER BY q.bank_id, q.sort_no, q.id
+    </select>
+
+    <select id="selectQuestionByIds" resultType="com.ddyu.zhikao.vo.QuestionVO">
+        SELECT
+        <include refid="questionVoColumns"/>
+        FROM question q
+        JOIN question_bank b ON b.id = q.bank_id
+        WHERE q.id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        ORDER BY q.id
+    </select>
+
+    <select id="selectRandomIds" resultType="long">
+        SELECT id FROM question
+        WHERE bank_id = #{bankId} AND type = #{type}
+        ORDER BY RAND()
+        LIMIT #{limit}
+    </select>
+
+</mapper>
