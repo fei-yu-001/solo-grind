@@ -44,7 +44,9 @@ const allMenus = [
   { path: '/banks', title: '题库', adminOnly: true },
   { path: '/questions', title: '题目', adminOnly: true },
   { path: '/papers', title: '试卷', adminOnly: true },
-  { path: '/scores', title: '成绩', adminOnly: false }
+  { path: '/scores', title: '成绩', adminOnly: true },
+  { path: '/exam-center', title: '考试中心', adminOnly: false, studentOnly: true },
+  { path: '/my-scores', title: '我的成绩', adminOnly: true, studentOnly: true }
 ]
 
 const user = getLoginUser()
@@ -52,7 +54,12 @@ const nickname = (user && user.nickname) || ''
 const username = (user && user.username) || ''
 const isAdmin = (user && user.role) === 'ADMIN'
 
-const menus = allMenus.filter((item) => !item.adminOnly || isAdmin)
+const menus = allMenus.filter((item) => {
+  if (isAdmin) {
+    return !item.studentOnly || item.path === '/exam-center'
+  }
+  return !item.adminOnly
+})
 const activeMenu = computed(() => route.path)
 const pageTitle = computed(() => route.meta.title || '')
 

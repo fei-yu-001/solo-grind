@@ -21,6 +21,11 @@ export function getStats() {
   return request.get('/scores/stats')
 }
 
+export function getMyScores(params) {
+  // params: {page, size}
+  return request.get('/scores/mine', { params })
+}
+
 export function getRanking(params) {
   // params: {paperId, limit}
   return request.get('/scores/ranking', { params })

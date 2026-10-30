@@ -43,8 +43,26 @@ const routes = [
         name: 'scores',
         component: () => import('../views/Score.vue'),
         meta: { title: '成绩管理' }
+      },
+      {
+        path: 'exam-center',
+        name: 'exam-center',
+        component: () => import('../views/ExamCenter.vue'),
+        meta: { title: '考试中心' }
+      },
+      {
+        path: 'my-scores',
+        name: 'my-scores',
+        component: () => import('../views/MyScore.vue'),
+        meta: { title: '我的成绩' }
       }
     ]
+  },
+  {
+    path: '/exam/:paperId',
+    name: 'exam',
+    component: () => import('../views/ExamRoom.vue'),
+    meta: { title: '在线答题', fullscreen: true }
   }
 ]
 
