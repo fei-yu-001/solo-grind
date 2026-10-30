@@ -57,12 +57,23 @@ public class ScoreServiceImpl implements ScoreService {
     @Override
     public PageResult<ScoreVO> page(Long paperId, String keyword, long page, long size) {
         Page<ScoreVO> result = new Page<>(page, size);
-        result.setRecords(scoreMapper.selectScorePage(result, paperId, keyword));
+        result.setRecords(scoreMapper.selectScorePage(result, paperId, keyword, null));
         return new PageResult<>(result.getTotal(), result.getCurrent(), result.getSize(), result.getRecords());
     }
 
     @Override
-    public ScoreDetailVO getDetail(Long paperId, Long userId) {
+    public PageResult<ScoreVO> mine(Long userId, long page, long size) {
+        Page<ScoreVO> result = new Page<>(page, size);
+        result.setRecords(scoreMapper.selectScorePage(result, null, null, userId));
+        return new PageResult<>(result.getTotal(), result.getCurrent(), result.getSize(), result.getRecords());
+    }
+
+    /** 成绩明细归属校验：考生只能看自己的，看别人的 403，管理员不限 */
+    @Override
+    public ScoreDetailVO getDetail(Long paperId, Long userId, Long viewerId, boolean viewerIsAdmin) {
+        if (!viewerIsAdmin && !viewerId.equals(userId)) {
+            throw new BizException(403, "只能查看自己的成绩明细");
+        }
         ScoreVO score = scoreMapper.selectScore(paperId, userId);
         if (score == null) {
             throw BizException.notFound("该考生没有这份试卷的成绩");
@@ -98,7 +109,7 @@ public class ScoreServiceImpl implements ScoreService {
         vo.setUserCount(userMapper.selectCount(null));
 
         // 作答聚合：人数、均分、最高分、及格率
-        List<ScoreVO> allScores = scoreMapper.selectScorePage(null, null, null);
+        List<ScoreVO> allScores = scoreMapper.selectScorePage(null, null, null, null);
         vo.setSubmittedCount((long) allScores.size());
         if (allScores.isEmpty()) {
             vo.setAvgScore(0.0);

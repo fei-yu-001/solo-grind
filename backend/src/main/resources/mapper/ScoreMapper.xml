@@ -30,6 +30,7 @@
         JOIN sys_user u ON u.id = ar.user_id
         <where>
             <if test="paperId != null">AND ar.paper_id = #{paperId}</if>
+            <if test="userId != null">AND ar.user_id = #{userId}</if>
             <if test="keyword != null and keyword != ''">
                 AND (u.username LIKE CONCAT('%', #{keyword}, '%') OR u.nickname LIKE CONCAT('%', #{keyword}, '%'))
             </if>

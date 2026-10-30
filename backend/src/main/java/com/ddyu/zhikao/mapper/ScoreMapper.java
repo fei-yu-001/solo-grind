@@ -12,10 +12,11 @@ import java.util.Map;
 
 public interface ScoreMapper extends BaseMapper<AnswerRecord> {
 
-    /** 成绩分页：answer_record join sys_user join exam_paper，按 paper+user 分组聚合；首参 Page 交给分页插件 */
+    /** 成绩分页：answer_record join sys_user join exam_paper，按 paper+user 分组聚合；首参 Page 交给分页插件；userId 非空时只查该考生 */
     List<ScoreVO> selectScorePage(Page<ScoreVO> page,
                                   @Param("paperId") Long paperId,
-                                  @Param("keyword") String keyword);
+                                  @Param("keyword") String keyword,
+                                  @Param("userId") Long userId);
 
     /** 某考生某试卷的聚合成绩 */
     ScoreVO selectScore(@Param("paperId") Long paperId, @Param("userId") Long userId);

@@ -12,8 +12,11 @@ public interface ScoreService {
 
     PageResult<ScoreVO> page(Long paperId, String keyword, long page, long size);
 
-    /** 成绩明细（逐题） */
-    ScoreDetailVO getDetail(Long paperId, Long userId);
+    /** 当前考生自己的成绩分页 */
+    PageResult<ScoreVO> mine(Long userId, long page, long size);
+
+    /** 成绩明细（逐题）；考生只能看自己的，看别人的 403，管理员不限 */
+    ScoreDetailVO getDetail(Long paperId, Long userId, Long viewerId, boolean viewerIsAdmin);
 
     /** 撤销成绩，事务 */
     void delete(Long paperId, Long userId);
