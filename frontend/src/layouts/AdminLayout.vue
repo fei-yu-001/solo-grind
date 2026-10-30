@@ -1,7 +1,7 @@
 <template>
   <el-container class="layout">
     <el-aside width="200px" class="layout-aside">
-      <div class="layout-logo">图书管理系统</div>
+      <div class="layout-logo">智考刷题系统</div>
       <el-menu
         :default-active="activeMenu"
         router
@@ -9,18 +9,16 @@
         text-color="rgba(255,255,255,0.65)"
         active-text-color="#ffffff"
       >
-        <el-menu-item index="/dashboard">统计概览</el-menu-item>
-        <el-menu-item index="/books">图书管理</el-menu-item>
-        <el-menu-item index="/categories">分类管理</el-menu-item>
-        <el-menu-item index="/readers">读者管理</el-menu-item>
-        <el-menu-item index="/borrows">借阅管理</el-menu-item>
+        <template v-for="item in menus" :key="item.path">
+          <el-menu-item :index="item.path">{{ item.title }}</el-menu-item>
+        </template>
       </el-menu>
     </el-aside>
     <el-container>
       <el-header class="layout-header">
         <span class="layout-title">{{ pageTitle }}</span>
         <span class="layout-user">
-          <span class="layout-username">{{ realName || username }}</span>
+          <span class="layout-username">{{ nickname || username }}</span>
           <el-button type="danger" link @click="onLogout">退出登录</el-button>
         </span>
       </el-header>
@@ -36,14 +34,25 @@ import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { logout } from '../api/auth'
-import { clearLoginInfo, getToken, getRealName } from '../stores/auth'
+import { clearLoginInfo, getLoginUser } from '../stores/auth'
 
 const route = useRoute()
 const router = useRouter()
 
-const realName = getRealName()
-const username = getToken() ? 'admin' : ''
+const allMenus = [
+  { path: '/dashboard', title: '概览', adminOnly: true },
+  { path: '/banks', title: '题库', adminOnly: true },
+  { path: '/questions', title: '题目', adminOnly: true },
+  { path: '/papers', title: '试卷', adminOnly: true },
+  { path: '/scores', title: '成绩', adminOnly: false }
+]
 
+const user = getLoginUser()
+const nickname = (user && user.nickname) || ''
+const username = (user && user.username) || ''
+const isAdmin = (user && user.role) === 'ADMIN'
+
+const menus = allMenus.filter((item) => !item.adminOnly || isAdmin)
 const activeMenu = computed(() => route.path)
 const pageTitle = computed(() => route.meta.title || '')
 

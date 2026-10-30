@@ -27,6 +27,9 @@ body {
 }
 
 .filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
   margin-bottom: 16px;
 }
 
@@ -35,6 +38,15 @@ body {
   width: 200px;
   margin-right: 12px;
   margin-bottom: 8px;
+}
+
+.filter-bar .el-button {
+  margin-bottom: 8px;
+}
+
+.pager {
+  margin-top: 16px;
+  justify-content: flex-end;
 }
 
 .table-op {

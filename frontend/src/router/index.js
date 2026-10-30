@@ -1,19 +1,49 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { isLoggedIn } from '../stores/auth'
+import { isLoggedIn, isAdmin } from '../stores/auth'
 import AdminLayout from '../layouts/AdminLayout.vue'
 
 const routes = [
-  { path: '/login', name: 'login', component: () => import('../views/LoginView.vue'), meta: { public: true } },
+  {
+    path: '/login',
+    name: 'login',
+    component: () => import('../views/Login.vue'),
+    meta: { public: true, title: '登录' }
+  },
   {
     path: '/',
     component: AdminLayout,
     redirect: '/dashboard',
     children: [
-      { path: 'dashboard', name: 'dashboard', component: () => import('../views/DashboardView.vue'), meta: { title: '统计概览' } },
-      { path: 'books', name: 'books', component: () => import('../views/BookView.vue'), meta: { title: '图书管理' } },
-      { path: 'categories', name: 'categories', component: () => import('../views/CategoryView.vue'), meta: { title: '分类管理' } },
-      { path: 'readers', name: 'readers', component: () => import('../views/ReaderView.vue'), meta: { title: '读者管理' } },
-      { path: 'borrows', name: 'borrows', component: () => import('../views/BorrowView.vue'), meta: { title: '借阅管理' } }
+      {
+        path: 'dashboard',
+        name: 'dashboard',
+        component: () => import('../views/Dashboard.vue'),
+        meta: { title: '概览' }
+      },
+      {
+        path: 'banks',
+        name: 'banks',
+        component: () => import('../views/Bank.vue'),
+        meta: { title: '题库管理', adminOnly: true }
+      },
+      {
+        path: 'questions',
+        name: 'questions',
+        component: () => import('../views/Question.vue'),
+        meta: { title: '题目管理', adminOnly: true }
+      },
+      {
+        path: 'papers',
+        name: 'papers',
+        component: () => import('../views/Paper.vue'),
+        meta: { title: '试卷管理', adminOnly: true }
+      },
+      {
+        path: 'scores',
+        name: 'scores',
+        component: () => import('../views/Score.vue'),
+        meta: { title: '成绩管理' }
+      }
     ]
   }
 ]
@@ -30,6 +60,10 @@ router.beforeEach((to) => {
   if (to.path === '/login' && isLoggedIn()) {
     return { path: '/' }
   }
+  if (to.meta.adminOnly && !isAdmin()) {
+    return { path: '/scores' }
+  }
+  return true
 })
 
 export default router
