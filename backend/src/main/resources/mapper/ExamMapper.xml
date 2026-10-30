@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ddyu.zhikao.mapper.ExamMapper">
+
+    <!-- 考试中心：试卷 join 题库 + 题目数子查询 + 当前考生成绩聚合（left join），一次查询，无 N+1 -->
+    <select id="selectAvailablePapers" resultType="com.ddyu.zhikao.vo.ExamCardVO">
+        SELECT
+            p.id AS paperId,
+            p.title,
+            b.name AS bankName,
+            (SELECT COUNT(*) FROM exam_paper_question pq WHERE pq.paper_id = p.id) AS questionCount,
+            p.total_score AS totalScore,
+            p.duration_sec AS durationSec,
+            agg.total_score AS myScore,
+            DATE_FORMAT(agg.submitted_at, '%Y-%m-%d %H:%i:%s') AS mySubmittedAt
+        FROM exam_paper p
+        JOIN question_bank b ON b.id = p.bank_id
+        LEFT JOIN (
+            SELECT paper_id, SUM(score) AS total_score, MAX(submitted_at) AS submitted_at
+            FROM answer_record
+            WHERE user_id = #{userId}
+            GROUP BY paper_id
+        ) agg ON agg.paper_id = p.id
+        WHERE p.status = 'PUBLISHED'
+        ORDER BY p.id DESC
+    </select>
+
+    <!-- 考场题目：只查安全列，不含 answer / analysis，按题序排 -->
+    <select id="selectExamQuestions" resultType="com.ddyu.zhikao.vo.ExamQuestionVO">
+        SELECT
+            pq.seq,
+            pq.question_id AS questionId,
+            q.type,
+            q.stem,
+            q.options AS optionsJson,
+            pq.score
+        FROM exam_paper_question pq
+        JOIN question q ON q.id = pq.question_id
+        WHERE pq.paper_id = #{paperId}
+        ORDER BY pq.seq
+    </select>
+
+</mapper>
