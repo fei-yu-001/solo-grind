@@ -1,6 +1,6 @@
 # 后端验证记录（VERIFY）
 
-验证时间：2026-10-30 15:30 ~ 16:20（本机 Windows 11，JDK 21，Maven 3.9）
+验证时间：2026-10-30 15:30 ~ 17:00（本机 Windows 11，JDK 21，Maven 3.9）
 
 环境前提：MySQL `zhikao` 库已灌初始数据（185 题 / 2 题库 / 2 卷 / 170 作答），Redis 6379 无密码。
 启动方式：`mvn -B spring-boot:run`（8080）。
@@ -119,7 +119,57 @@ e2e-api.sh（脚本更新后首跑，无需 curl 包装器）：51 通过, 0 失
 结果: 10 通过, 0 失败
 ```
 
-## 4. 手工补测（scripts/e2e-supplement.py，10 条断言）
+## 4. 考生在线答题（契约 4.8，scripts/e2e-examroom.py，30 条断言）
+
+新增：ExamController（available / {paperId}/questions）、GET /api/scores/mine、
+明细归属校验（考生只能看自己的，别人 403，管理员不限）。
+防作弊：ExamQuestionVO 独立建，SQL 层就不查 answer/analysis，并递归检查整棵 JSON 无泄漏。
+
+```
+  [ok]   available 200 且 2 张卷子
+  [ok]   按 id 倒序
+  [ok]   myScore 都是 null
+  [ok]   mySubmittedAt 都是 null
+  [ok]   卡片字段齐全
+  [ok]   exam view 200 且 85 题
+  [ok]   questionCount=85
+  [ok]   seq 从 1 连续到 85
+  [ok]   整棵 JSON 无 answer/analysis
+  [ok]   题目字段只含 seq/questionId/type/typeText/stem/options/score
+  [ok]   题型分布 判断11/单选59/多选15
+  [ok]   paper2 100 题
+  [ok]   paper2 无 answer/analysis
+  [ok]   交卷 200
+  [ok]   questionCount=85（全卷落库）
+  [ok]   totalScore >= 0
+  [ok]   card1 myScore=0
+  [ok]   card1 mySubmittedAt 非空
+  [ok]   card2 myScore 仍为 null
+  [ok]   已交卷再进考场 409
+  [ok]   409 文案（你已经交过这份试卷了）
+  [ok]   mine 200 且 1 条
+  [ok]   mine 是自己的（userId=4）
+  [ok]   mine totalScore 与交卷一致
+  [ok]   考生查别人明细 403
+  [ok]   考生查自己明细 200
+  [ok]   admin 查别人明细 200
+  [ok]   admin 撤销 student03 成绩 200
+  [ok]   清理后 mine total=0
+  [ok]   清理后 available myScore 恢复 null
+结果: 30 通过, 0 失败
+```
+
+跑完回归旧 e2e：51 通过, 0 失败；数据库恢复基线：
+```
+mysql> select (select count(*) from exam_paper) p,(select count(*) from answer_record) a;
+p    a
+2    170
+```
+
+实现说明：available 用一条 SQL（试卷 + 题目数子查询 + 当前考生成绩 left join 聚合），无 N+1；
+考场题目按 exam_paper_question.seq 排序，只查安全列；optionsJson 中转字段加 @JsonIgnore 不出 JSON。
+
+## 5. 手工补测（scripts/e2e-supplement.py，10 条断言）
 
 脚本没覆盖的四项 + 判分边界，`python scripts/e2e-supplement.py`（urllib 直连 8080）：
 
@@ -154,7 +204,7 @@ e2e-api.sh（脚本更新后首跑，无需 curl 包装器）：51 通过, 0 失
   POST/DELETE /api/tags、DELETE /api/scores/{paperId}/{userId}
 - **分页边界抽查**：题目 total=187 时（含临时题），size=10 第 19 页 7 条、第 20 页 0 条，total 与页大小对得上
 
-## 5. Redis 缓存日志（服务端 /tmp/zhikao-server.log 摘录）
+## 6. Redis 缓存日志（服务端 /tmp/zhikao-server.log 摘录）
 
 ```
 [cache] 登录令牌写入 token=667115f6... admin=admin
@@ -169,7 +219,7 @@ e2e-api.sh（脚本更新后首跑，无需 curl 包装器）：51 通过, 0 失
 字典 TTL 3600s、空值标记 60s（`dict:banks` 存 `__EMPTY__`），排行榜 TTL 300s（`cache:ranking:<paperId>`），
 交卷/撤销成绩后删 `cache:ranking:*`，题库增删改后删 `dict:banks`。
 
-## 6. 数据一致性
+## 7. 数据一致性
 
 跑完所有验证后数据库与初始状态一致，无残留：
 
@@ -181,7 +231,7 @@ q    b    p    a    u    t
 185  2    2    170  4    10
 ```
 
-## 7. 实现说明（对照任务书）
+## 8. 实现说明（对照任务书）
 
 - 分页 SQL 均无一对多 join：question/bank/paper/score 分页只查主表行，
   标签用二次 `question_tag IN` 查询在 Service 装配；试卷题目明细只用于单卷详情
@@ -192,7 +242,7 @@ q    b    p    a    u    t
   仅 DRAFT 可改/可发布、仅 PUBLISHED 可交卷/可结束、同卷同考生仅一次、非 ADMIN 403
 - stats 的 questionCount 是 `select count(*) from question` 全表数，多少报多少，无特殊处理
 
-## 8. 顺带修正的骨架问题（超出 backend/** 业务代码的最小改动）
+## 9. 顺带修正的骨架问题（超出 backend/** 业务代码的最小改动）
 
 - `common/LoginUser.java`：skeleton 版只有 id/username/realName（图书系统遗留），
   没有 nickname/role，403 判断和契约 3 的身份字段都无法实现 → 改为 id/username/nickname/role
