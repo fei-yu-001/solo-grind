@@ -15,7 +15,16 @@ zhikao/
 └── docs/        CONTRACT.md 接口契约、PLAN.md 任务书对照、TASK-*.md 分工
 ```
 
-## 起本地环境
+## 一键启动
+
+```bash
+bash scripts/dev.sh          # 检查 MySQL/Redis 并起后端 8080 + 前端 5173
+bash scripts/dev.sh stop     # 停掉两个服务
+```
+
+打开 http://127.0.0.1:5173
+
+## 手工起环境（等价）
 
 前置：JDK 21、Maven 3.9、Node 18+、MySQL 8（root / DDyu-996）、Redis 5（6379）。
 
@@ -52,5 +61,23 @@ cd frontend && npm install && npm run dev
 ## 验收
 
 ```bash
-bash scripts/e2e-api.sh
+bash scripts/e2e-api.sh                              # 接口 51 条断言
+bash scripts/e2e-extra.sh                            # 缓存/判分/批量/权限 18 条
+node scripts/ui-check.mjs http://127.0.0.1:5173      # 六个页面巡检 + 截图
+node scripts/ui-flow.mjs  http://127.0.0.1:5173      # 组卷端到端（真实鼠标事件）
+```
+
+验收记录见 `docs/VERIFY.md`。
+
+## 实验报告
+
+- 报告：`docs/智考刷题系统-实验报告.docx`（由 `scripts/gen-report.py` 生成，表结构从建表脚本解析）
+- 配图：`docs/diagrams/`（E-R 图、分层架构图、业务模块关系图，源文件是 SVG）
+- 截图：`docs/screenshots/`
+
+重新生成：
+
+```bash
+python scripts/gen-diagrams.py docs/diagrams
+python scripts/gen-report.py
 ```

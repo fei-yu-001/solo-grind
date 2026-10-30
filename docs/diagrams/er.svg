@@ -1,0 +1,104 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1560" height="976" viewBox="0 0 1560 976">
+<rect width="1560" height="976" fill="#fafafa"/>
+<text x="40" y="34" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="22" font-weight="700" fill="#303133">智考刷题系统 E-R 图（9 张表，含一对一 / 一对多 / 多对多）</text>
+<g><rect x="40" y="60" width="320" height="214" rx="10" fill="#ffffff" stroke="#409eff" stroke-width="2"/>
+<rect x="40" y="60" width="320" height="40" rx="10" fill="#409eff"/>
+<rect x="40" y="88" width="320" height="12" fill="#409eff"/>
+<text x="54" y="86" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="17" fill="#ffffff" font-weight="600">sys_user 登录账号</text>
+<text x="54" y="126" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="15" fill="#c0392b" font-weight="600">PK id</text>
+<text x="54" y="152" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="15" fill="#303133" font-weight="400">username 唯一</text>
+<text x="54" y="178" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="15" fill="#303133" font-weight="400">password BCrypt</text>
+<text x="54" y="204" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="15" fill="#303133" font-weight="400">nickname</text>
+<text x="54" y="230" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="15" fill="#303133" font-weight="400">role ADMIN/STUDENT</text>
+<text x="54" y="256" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="15" fill="#303133" font-weight="400">status</text>
+</g>
+<g><rect x="40" y="400" width="320" height="214" rx="10" fill="#ffffff" stroke="#409eff" stroke-width="2"/>
+<rect x="40" y="400" width="320" height="40" rx="10" fill="#409eff"/>
+<rect x="40" y="428" width="320" height="12" fill="#409eff"/>
+<text x="54" y="426" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="17" fill="#ffffff" font-weight="600">user_profile 考生资料</text>
+<text x="54" y="466" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="15" fill="#c0392b" font-weight="600">PK id</text>
+<text x="54" y="492" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="15" fill="#1677ff" font-weight="600">FK user_id 唯一</text>
+<text x="54" y="518" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="15" fill="#303133" font-weight="400">school</text>
+<text x="54" y="544" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="15" fill="#303133" font-weight="400">group_name</text>
+<text x="54" y="570" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="15" fill="#303133" font-weight="400">phone</text>
+<text x="54" y="596" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="15" fill="#303133" font-weight="400">avatar</text>
+</g>
+<g><rect x="430" y="60" width="320" height="188" rx="10" fill="#ffffff" stroke="#409eff" stroke-width="2"/>
+<rect x="430" y="60" width="320" height="40" rx="10" fill="#409eff"/>
+<rect x="430" y="88" width="320" height="12" fill="#409eff"/>
+<text x="444" y="86" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="17" fill="#ffffff" font-weight="600">question_bank 题库</text>
+<text x="444" y="126" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="15" fill="#c0392b" font-weight="600">PK id</text>
+<text x="444" y="152" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="15" fill="#303133" font-weight="400">name 唯一</text>
+<text x="444" y="178" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="15" fill="#303133" font-weight="400">group_name</text>
+<text x="444" y="204" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="15" fill="#303133" font-weight="400">description</text>
+<text x="444" y="230" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="15" fill="#303133" font-weight="400">status</text>
+</g>
+<g><rect x="430" y="400" width="320" height="240" rx="10" fill="#ffffff" stroke="#409eff" stroke-width="2"/>
+<rect x="430" y="400" width="320" height="40" rx="10" fill="#409eff"/>
+<rect x="430" y="428" width="320" height="12" fill="#409eff"/>
+<text x="444" y="426" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="17" fill="#ffffff" font-weight="600">question 题目</text>
+<text x="444" y="466" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="15" fill="#c0392b" font-weight="600">PK id</text>
+<text x="444" y="492" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="15" fill="#1677ff" font-weight="600">FK bank_id</text>
+<text x="444" y="518" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="15" fill="#303133" font-weight="400">type single/multi/judge</text>
+<text x="444" y="544" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="15" fill="#303133" font-weight="400">stem 题干</text>
+<text x="444" y="570" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="15" fill="#303133" font-weight="400">options JSON</text>
+<text x="444" y="596" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="15" fill="#303133" font-weight="400">answer JSON</text>
+<text x="444" y="622" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="15" fill="#303133" font-weight="400">difficulty</text>
+</g>
+<g><rect x="430" y="780" width="320" height="136" rx="10" fill="#ffffff" stroke="#409eff" stroke-width="2"/>
+<rect x="430" y="780" width="320" height="40" rx="10" fill="#409eff"/>
+<rect x="430" y="808" width="320" height="12" fill="#409eff"/>
+<text x="444" y="806" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="17" fill="#ffffff" font-weight="600">tag 知识点</text>
+<text x="444" y="846" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="15" fill="#c0392b" font-weight="600">PK id</text>
+<text x="444" y="872" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="15" fill="#303133" font-weight="400">name 唯一</text>
+<text x="444" y="898" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="15" fill="#303133" font-weight="400">color</text>
+</g>
+<g><rect x="800" y="780" width="320" height="110" rx="10" fill="#ffffff" stroke="#409eff" stroke-width="2"/>
+<rect x="800" y="780" width="320" height="40" rx="10" fill="#409eff"/>
+<rect x="800" y="808" width="320" height="12" fill="#409eff"/>
+<text x="814" y="806" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="17" fill="#ffffff" font-weight="600">question_tag 题目标签</text>
+<text x="814" y="846" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="15" fill="#c0392b" font-weight="600">PK,FK question_id</text>
+<text x="814" y="872" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="15" fill="#c0392b" font-weight="600">PK,FK tag_id</text>
+</g>
+<g><rect x="800" y="60" width="320" height="214" rx="10" fill="#ffffff" stroke="#409eff" stroke-width="2"/>
+<rect x="800" y="60" width="320" height="40" rx="10" fill="#409eff"/>
+<rect x="800" y="88" width="320" height="12" fill="#409eff"/>
+<text x="814" y="86" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="17" fill="#ffffff" font-weight="600">exam_paper 试卷</text>
+<text x="814" y="126" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="15" fill="#c0392b" font-weight="600">PK id</text>
+<text x="814" y="152" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="15" fill="#303133" font-weight="400">title</text>
+<text x="814" y="178" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="15" fill="#1677ff" font-weight="600">FK bank_id</text>
+<text x="814" y="204" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="15" fill="#303133" font-weight="400">judge/single/multi_count</text>
+<text x="814" y="230" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="15" fill="#303133" font-weight="400">total_score</text>
+<text x="814" y="256" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="15" fill="#303133" font-weight="400">status</text>
+</g>
+<g><rect x="800" y="400" width="320" height="162" rx="10" fill="#ffffff" stroke="#409eff" stroke-width="2"/>
+<rect x="800" y="400" width="320" height="40" rx="10" fill="#409eff"/>
+<rect x="800" y="428" width="320" height="12" fill="#409eff"/>
+<text x="814" y="426" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="17" fill="#ffffff" font-weight="600">exam_paper_question 试卷题目</text>
+<text x="814" y="466" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="15" fill="#c0392b" font-weight="600">PK,FK paper_id</text>
+<text x="814" y="492" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="15" fill="#c0392b" font-weight="600">PK,FK question_id</text>
+<text x="814" y="518" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="15" fill="#303133" font-weight="400">seq 题序</text>
+<text x="814" y="544" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="15" fill="#303133" font-weight="400">score 分值</text>
+</g>
+<g><rect x="1180" y="400" width="320" height="240" rx="10" fill="#ffffff" stroke="#409eff" stroke-width="2"/>
+<rect x="1180" y="400" width="320" height="40" rx="10" fill="#409eff"/>
+<rect x="1180" y="428" width="320" height="12" fill="#409eff"/>
+<text x="1194" y="426" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="17" fill="#ffffff" font-weight="600">answer_record 作答记录</text>
+<text x="1194" y="466" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="15" fill="#c0392b" font-weight="600">PK id</text>
+<text x="1194" y="492" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="15" fill="#1677ff" font-weight="600">FK paper_id</text>
+<text x="1194" y="518" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="15" fill="#1677ff" font-weight="600">FK user_id</text>
+<text x="1194" y="544" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="15" fill="#1677ff" font-weight="600">FK question_id</text>
+<text x="1194" y="570" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="15" fill="#303133" font-weight="400">chosen JSON</text>
+<text x="1194" y="596" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="15" fill="#303133" font-weight="400">correct / score</text>
+<text x="1194" y="622" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="15" fill="#303133" font-weight="400">submitted_at</text>
+</g>
+<path d="M 200.0 274 L 100 274 L 100 400 L 200.0 400" fill="none" stroke="#909399" stroke-width="2"/><text x="108" y="337.0" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="14" fill="#606266">1 : 1</text>
+<path d="M 590.0 248 L 490 248 L 490 400 L 590.0 400" fill="none" stroke="#909399" stroke-width="2"/><text x="498" y="324.0" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="14" fill="#606266">1 : N</text>
+<path d="M 590.0 640 L 680 640 L 680 780 L 960.0 780" fill="none" stroke="#909399" stroke-width="2"/><text x="688" y="710.0" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="14" fill="#606266">1 : N</text>
+<path d="M 750 848.0 L 780 848.0 L 780 835.0 L 800 835.0" fill="none" stroke="#909399" stroke-width="2"/><text x="788" y="841.5" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="14" fill="#606266"></text>
+<path d="M 960.0 274 L 860 274 L 860 400 L 960.0 400" fill="none" stroke="#909399" stroke-width="2"/><text x="868" y="337.0" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="14" fill="#606266">1 : N</text>
+<path d="M 750 520.0 L 770 520.0 L 770 481.0 L 800 481.0" fill="none" stroke="#909399" stroke-width="2"/><text x="778" y="500.5" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="14" fill="#606266">N : 1</text>
+<path d="M 1120 120 L 1160 120 L 1160 520 L 1180 520" fill="none" stroke="#909399" stroke-width="2"/><text x="1090" y="112" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="14" fill="#606266">1 : N</text>
+<path d="M 40 167.0 L 20 167.0 L 20 946 L 1340.0 946 L 1340.0 640" fill="none" stroke="#909399" stroke-width="2" stroke-dasharray="6 4"/><text x="1350.0" y="938" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="14" fill="#606266">1 : N（账号 → 作答记录）</text>
+<path d="M 750 140 L 800 140" fill="none" stroke="#909399" stroke-width="2"/><text x="770" y="132" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="14" fill="#606266">1 : N</text>
+</svg>
