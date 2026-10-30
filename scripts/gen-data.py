@@ -94,14 +94,19 @@ type_cn = {"single": "单选题", "multi": "多选题", "judge": "判断题"}
 qrows, link_rows = [], []
 for i, item in enumerate(questions, start=1):
     options = item["options"]
-    options_sql = "NULL" if not options or options == "[]" else q(options)
     answer = item["answer"]
     if isinstance(answer, str):
         try:
-            parsed = json.loads(answer)
+            answer = json.loads(answer)
         except json.JSONDecodeError:
-            parsed = answer
-        answer = parsed
+            pass
+
+    # 判断题：旧系统存的是 JSON 布尔，新系统统一用 "A"(对) / "B"(错)，并补上两个选项
+    if item["type"] == "judge":
+        options = json.dumps([{"key": "A", "text": "对"}, {"key": "B", "text": "错"}], ensure_ascii=False)
+        answer = "A" if answer is True else "B"
+
+    options_sql = "NULL" if not options or options == "[]" else q(options)
     answer_sql = q(json.dumps(answer, ensure_ascii=False))
     qrows.append(
         f"  ({i}, {bank_index[item['bank_id']]}, {q(item['type'])}, {q(item['stem'])}, "
@@ -152,16 +157,55 @@ out.append("")
 
 # 作答记录：两位考生交过本科组卷子
 paper1 = [(int(r.split(",")[1]), int(r.split(",")[3].strip(" )"))) for r in pqrows if r.strip().startswith("(1,")]
+# 作答明细：答对的 chosen 用标准答案，答错的用一个错误选项，未答才留 NULL
+answer_of = {}
+options_of = {}
+for i, item in enumerate(questions, start=1):
+    a = item["answer"]
+    if isinstance(a, str):
+        try:
+            a = json.loads(a)
+        except json.JSONDecodeError:
+            pass
+    answer_of[i] = a
+    try:
+        options_of[i] = json.loads(item["options"]) if item["options"] and item["options"] != "[]" else []
+    except json.JSONDecodeError:
+        options_of[i] = []
+
+
+def wrong_choice(qid):
+    ans = answer_of[qid]
+    keys = [o["key"] for o in options_of[qid]] or ["A", "B", "C", "D"]
+    if isinstance(ans, list):
+        pick = [k for k in keys if k not in ans][:1]
+        return pick or ["A"]
+    for k in keys:
+        if k != ans:
+            return k
+    return "A"
+
+
 arows = []
 rid = 0
 for user_id, ratio in ((2, 0.72), (3, 0.55)):
     hit = int(len(paper1) * ratio)
     for idx, (qid, score) in enumerate(paper1):
         rid += 1
-        correct = 1 if idx < hit else 0
-        got = score if correct else 0
+        if idx < hit:
+            chosen = json.dumps(answer_of[qid], ensure_ascii=False)
+            correct, got = 1, score
+        elif idx < hit + 5:
+            # 每个考生留 5 道空着，用来验证「未答」统计
+            arows.append(
+                f"  ({rid}, 1, {user_id}, {qid}, NULL, 0, 0, '2026-10-28 10:00:00')"
+            )
+            continue
+        else:
+            chosen = json.dumps(wrong_choice(qid), ensure_ascii=False)
+            correct, got = 0, 0
         arows.append(
-            f"  ({rid}, 1, {user_id}, {qid}, NULL, {correct}, {got}, '2026-10-28 10:00:00')"
+            f"  ({rid}, 1, {user_id}, {qid}, '{chosen}', {correct}, {got}, '2026-10-28 10:00:00')"
         )
 
 out.append("-- 两位考生已完成本科组模考，用于成绩列表和统计的演示数据")
