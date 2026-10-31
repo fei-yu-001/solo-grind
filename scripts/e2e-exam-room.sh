@@ -93,7 +93,7 @@ check "我的成绩有 1 条" "$(api GET '/api/scores/mine?page=1&size=10' | py 
 check "成绩明细可看（自己的）" "$(status GET "/api/scores/$PAPER/$STU_ID")" "200"
 check "看别人的成绩 403" "$(status GET "/api/scores/$PAPER/2")" "403"
 # 用种子数据里确实存在的一条成绩（试卷 1 / 考生 2），避免测到不存在的记录
-check "管理员能看任何人的成绩" "$(status GET "/api/scores/1/2" '' "$ADMIN")" "200"
+check "管理员能看任何人的成绩" "$(status GET "/api/scores/$PAPER/$STU_ID" '' "$ADMIN")" "200"
 
 echo "== 6. 清理"
 check "撤销这份成绩" "$(status DELETE "/api/scores/$PAPER/$STU_ID" '' "$ADMIN")" "200"
