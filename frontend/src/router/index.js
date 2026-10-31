@@ -51,6 +51,12 @@ const routes = [
         meta: { title: '考试中心' }
       },
       {
+        path: 'profile',
+        name: 'profile',
+        component: () => import('../views/Profile.vue'),
+        meta: { title: '个人资料' }
+      },
+      {
         path: 'my-scores',
         name: 'my-scores',
         component: () => import('../views/MyScore.vue'),

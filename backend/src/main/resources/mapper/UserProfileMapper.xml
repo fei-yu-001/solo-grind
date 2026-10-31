@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ddyu.zhikao.mapper.UserProfileMapper">
+
+    <!-- 一对一：sys_user 1 —— 1 user_profile，association 把资料映射成嵌套对象 -->
+    <resultMap id="ProfileMap" type="com.ddyu.zhikao.vo.ProfileVO">
+        <id property="userId" column="user_id"/>
+        <result property="username" column="username"/>
+        <result property="nickname" column="nickname"/>
+        <result property="role" column="role"/>
+        <association property="profile" javaType="com.ddyu.zhikao.vo.ProfileVO$Detail">
+            <id property="id" column="profile_id"/>
+            <result property="school" column="school"/>
+            <result property="groupName" column="group_name"/>
+            <result property="phone" column="phone"/>
+        </association>
+    </resultMap>
+
+    <select id="selectProfileByUserId" resultMap="ProfileMap">
+        SELECT u.id AS user_id, u.username, u.nickname, u.role,
+               p.id AS profile_id, p.school, p.group_name, p.phone
+        FROM sys_user u
+                 LEFT JOIN user_profile p ON p.user_id = u.id
+        WHERE u.id = #{userId}
+    </select>
+
+</mapper>

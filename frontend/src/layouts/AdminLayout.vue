@@ -46,7 +46,8 @@ const allMenus = [
   { path: '/papers', title: '试卷', roles: ['ADMIN'] },
   { path: '/scores', title: '成绩', roles: ['ADMIN'] },
   { path: '/exam-center', title: '考试中心', roles: ['ADMIN', 'STUDENT'] },
-  { path: '/my-scores', title: '我的成绩', roles: ['STUDENT'] }
+  { path: '/my-scores', title: '我的成绩', roles: ['STUDENT'] },
+  { path: '/profile', title: '个人资料', roles: ['ADMIN', 'STUDENT'] }
 ]
 
 const user = getLoginUser()

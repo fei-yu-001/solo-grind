@@ -56,6 +56,19 @@ public class TokenStore {
         }
     }
 
+    /** 资料修改后覆盖令牌里的用户信息，保留剩余有效期 */
+    public void refresh(String token, LoginUser user) {
+        if (token == null || token.isBlank()) {
+            return;
+        }
+        String key = CacheKeys.loginToken(token);
+        try {
+            redis.opsForValue().setIfPresent(key, objectMapper.writeValueAsString(user), TTL);
+        } catch (Exception e) {
+            log.warn("令牌刷新失败 token={}", token);
+        }
+    }
+
     public void remove(String token) {
         if (token != null && !token.isBlank()) {
             redis.delete(CacheKeys.loginToken(token));
