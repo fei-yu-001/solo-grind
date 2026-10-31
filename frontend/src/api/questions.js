@@ -24,3 +24,17 @@ export function batchMoveQuestions(data) {
   // data: {ids: [], bankId}
   return request.patch('/questions/batch', data)
 }
+
+// Word 题库导入：file 为原始 File 对象
+export function importQuestions(file, bankId, difficulty) {
+  const form = new FormData()
+  form.append('file', file)
+  form.append('bankId', bankId)
+  if (difficulty) {
+    form.append('difficulty', difficulty)
+  }
+  return request.post('/questions/import', form, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+    timeout: 60000
+  })
+}

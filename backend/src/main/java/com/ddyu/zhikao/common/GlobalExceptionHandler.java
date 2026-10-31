@@ -18,9 +18,9 @@ import java.util.stream.Collectors;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(BizException.class)
-    public ResponseEntity<Result<Void>> handleBiz(BizException e) {
+    public ResponseEntity<Result<Object>> handleBiz(BizException e) {
         log.warn("业务异常: code={} message={}", e.getCode(), e.getMessage());
-        return ResponseEntity.status(e.getCode()).body(Result.fail(e.getCode(), e.getMessage()));
+        return ResponseEntity.status(e.getCode()).body(Result.fail(e.getCode(), e.getMessage(), e.getData()));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

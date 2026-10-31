@@ -75,18 +75,56 @@ async function onSubmit() {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #1c3faa 0%, #409eff 100%);
+  position: relative;
+  background-color: #fffef5;
+  background-image: repeating-linear-gradient(
+    transparent,
+    transparent 27px,
+    rgba(44, 44, 44, 0.12) 28px
+  );
+  background-size: 100% 28px;
+}
+
+.login-page::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 36px;
+  width: 2px;
+  background-color: #ff6b6b;
+  pointer-events: none;
 }
 
 .login-card {
   width: 380px;
   padding: 12px 8px;
+  border: 2px dashed #2c2c2c;
+  border-radius: 4px;
+  background-color: #fffef5;
+  box-shadow: 6px 6px 0 #4ecdc4;
+  transform: rotate(-1deg);
 }
 
 .login-title {
+  position: relative;
+  display: inline-block;
+  left: 50%;
+  transform: translateX(-50%);
   margin: 0 0 24px;
   text-align: center;
-  color: #303133;
+  color: #2c2c2c;
+}
+
+.login-title::after {
+  content: '';
+  position: absolute;
+  left: -4px;
+  right: -4px;
+  bottom: 2px;
+  height: 0.45em;
+  background-color: #ffd93d;
+  z-index: -1;
 }
 
 .login-btn {

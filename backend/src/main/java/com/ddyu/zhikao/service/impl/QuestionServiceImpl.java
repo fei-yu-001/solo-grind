@@ -16,6 +16,10 @@ import com.ddyu.zhikao.mapper.QuestionTagMapper;
 import com.ddyu.zhikao.mapper.TagMapper;
 import com.ddyu.zhikao.service.AdminGuardService;
 import com.ddyu.zhikao.service.QuestionService;
+import com.ddyu.zhikao.service.word.DocxQuestionParser;
+import com.ddyu.zhikao.service.word.DocxTextExtractor;
+import com.ddyu.zhikao.vo.QuestionImportErrorVO;
+import com.ddyu.zhikao.vo.QuestionImportVO;
 import com.ddyu.zhikao.vo.QuestionVO;
 import com.ddyu.zhikao.vo.TagVO;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -23,7 +27,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -44,6 +51,9 @@ public class QuestionServiceImpl implements QuestionService {
             "judge", "判断题");
     private static final Map<Integer, String> DIFFICULTY_TEXT = Map.of(
             1, "易", 2, "中", 3, "难");
+    private static final int IMPORT_ERROR_LIMIT = 20;
+
+    private final DocxQuestionParser docxQuestionParser = new DocxQuestionParser();
 
     private final QuestionMapper questionMapper;
     private final QuestionTagMapper questionTagMapper;
@@ -129,6 +139,95 @@ public class QuestionServiceImpl implements QuestionService {
         questions.forEach(q -> q.setBankId(dto.getBankId()));
         questions.forEach(questionMapper::updateById);
         return questions.size();
+    }
+
+    /** 全部校验通过才入库；有任何一道不合法就整批回滚 */
+    @Transactional
+    @Override
+    public QuestionImportVO importDocx(MultipartFile file, Long bankId, Integer difficulty) {
+        if (bankId == null) {
+            throw BizException.badRequest("题库不能为空");
+        }
+        int level = difficulty == null ? 1 : difficulty;
+        if (level < 1 || level > 3) {
+            throw BizException.badRequest("难度只能是 1~3");
+        }
+        adminGuardService.checkBankExists(bankId);
+        DocxQuestionParser.ParseResult parsed = docxQuestionParser.parse(DocxTextExtractor.paragraphs(file));
+        if (!parsed.getErrors().isEmpty() || parsed.getQuestions().isEmpty()) {
+            throw importRejected(parsed);
+        }
+        for (DocxQuestionParser.ParsedQuestion item : parsed.getQuestions()) {
+            questionMapper.insert(toQuestion(item, bankId, level));
+        }
+        QuestionImportVO vo = new QuestionImportVO();
+        vo.setImported(parsed.getQuestions().size());
+        vo.setSkipped(0);
+        vo.setErrors(List.of());
+        return vo;
+    }
+
+    private BizException importRejected(DocxQuestionParser.ParseResult parsed) {
+        List<QuestionImportErrorVO> errors = new ArrayList<>();
+        for (DocxQuestionParser.ParseError error : parsed.getErrors()) {
+            if (errors.size() >= IMPORT_ERROR_LIMIT) {
+                break;
+            }
+            errors.add(new QuestionImportErrorVO(error.getLine(), error.getReason()));
+        }
+        QuestionImportVO data = new QuestionImportVO();
+        data.setImported(0);
+        data.setSkipped(0);
+        data.setErrors(errors);
+        // 空文档或整篇对不上格式：固定这句；已经认出题目但有不合法的，用第一处原因
+        boolean noQuestion = parsed.getQuestions().isEmpty();
+        String message = noQuestion
+                ? "没有解析到题目，请检查文档格式"
+                : errors.get(0).getReason();
+        return BizException.badRequest(message, data);
+    }
+
+    private Question toQuestion(DocxQuestionParser.ParsedQuestion item, Long bankId, int difficulty) {
+        Question question = new Question();
+        question.setBankId(bankId);
+        question.setType(item.getType());
+        question.setStem(item.getStem());
+        question.setOptions(toImportOptionsJson(item.getOptions()));
+        question.setAnswer(toImportAnswerJson(item.getType(), item.getAnswerLetters()));
+        question.setAnalysis(null);
+        question.setDifficulty(difficulty);
+        question.setSortNo(item.getSortNo());
+        return question;
+    }
+
+    private String toImportOptionsJson(Map<String, String> options) {
+        List<Map<String, String>> list = new ArrayList<>();
+        options.forEach((key, text) -> {
+            Map<String, String> option = new LinkedHashMap<>();
+            option.put("key", key);
+            option.put("text", text);
+            list.add(option);
+        });
+        try {
+            return objectMapper.writeValueAsString(list);
+        } catch (Exception e) {
+            throw new IllegalStateException("选项序列化失败", e);
+        }
+    }
+
+    private String toImportAnswerJson(String type, String letters) {
+        try {
+            if ("multi".equals(type)) {
+                List<String> answer = new ArrayList<>();
+                for (char letter : letters.toCharArray()) {
+                    answer.add(String.valueOf(letter));
+                }
+                return objectMapper.writeValueAsString(answer);
+            }
+            return objectMapper.writeValueAsString(letters);
+        } catch (Exception e) {
+            throw new IllegalStateException("答案序列化失败", e);
+        }
     }
 
     private void applyForm(Question question, QuestionForm form) {

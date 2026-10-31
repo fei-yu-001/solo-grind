@@ -82,7 +82,7 @@ onMounted(async () => {
 .exam-title {
   font-size: 16px;
   font-weight: 600;
-  color: #303133;
+  color: #2c2c2c;
   margin-bottom: 10px;
 }
 
@@ -90,7 +90,7 @@ onMounted(async () => {
   display: flex;
   flex-wrap: wrap;
   gap: 16px;
-  color: #606266;
+  color: rgba(44, 44, 44, 0.75);
   font-size: 14px;
   margin-bottom: 14px;
 }
@@ -102,12 +102,12 @@ onMounted(async () => {
 }
 
 .exam-score {
-  color: #303133;
+  color: #2c2c2c;
   font-weight: 600;
 }
 
 .exam-time {
-  color: #909399;
+  color: rgba(44, 44, 44, 0.55);
   font-size: 13px;
 }
 </style>

@@ -71,3 +71,204 @@ body {
   color: #909399;
   font-size: 12px;
 }
+
+/* 手绘涂鸦 */
+:root {
+  --el-color-primary: #2c2c2c;
+  --el-color-primary-light-3: #6a6a6a;
+  --el-color-primary-light-5: #959595;
+  --el-color-primary-light-7: #c0c0c0;
+  --el-color-primary-light-8: #d5d5d5;
+  --el-color-primary-light-9: #ebebeb;
+  --el-color-primary-dark-2: #1a1a1a;
+  --el-color-success: #4ecdc4;
+  --el-color-warning: #ffd93d;
+  --el-color-danger: #ff6b6b;
+  --el-bg-color: #fffef5;
+  --el-fill-color-blank: #fffef5;
+  --el-border-radius-base: 2px;
+  --el-text-color-primary: #2c2c2c;
+  --doodle-paper: #fffef5;
+  --doodle-ink: #2c2c2c;
+  --doodle-red: #ff6b6b;
+  --doodle-teal: #4ecdc4;
+  --doodle-yellow: #ffd93d;
+  --doodle-border: 2px dashed #2c2c2c;
+  --doodle-shadow: 4px 4px 0 #4ecdc4;
+}
+
+body {
+  position: relative;
+  background-color: #fffef5;
+  background-image: repeating-linear-gradient(
+    transparent,
+    transparent 27px,
+    rgba(44, 44, 44, 0.12) 28px
+  );
+  background-size: 100% 28px;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 28px;
+  width: 2px;
+  background-color: #ff6b6b;
+  pointer-events: none;
+}
+
+.el-button {
+  border: 2px dashed #2c2c2c;
+  border-radius: 2px;
+  background-color: #fffef5;
+  color: #2c2c2c;
+  box-shadow: 4px 4px 0 #4ecdc4;
+  transition: transform 200ms, box-shadow 200ms;
+}
+
+.el-button:hover,
+.el-button:focus {
+  border: 2px dashed #2c2c2c;
+  background-color: #ffd93d;
+  color: #2c2c2c;
+  box-shadow: 6px 6px 0 #4ecdc4;
+  transform: translate(-1px, -1px);
+}
+
+.el-button:active {
+  border: 2px dashed #2c2c2c;
+  background-color: #ffd93d;
+  color: #2c2c2c;
+  box-shadow: 0 0 0 #4ecdc4;
+  transform: scale(0.98);
+}
+
+.el-button--primary {
+  background-color: #ffd93d;
+  border-color: #2c2c2c;
+  color: #2c2c2c;
+}
+
+.el-button--success {
+  background-color: #4ecdc4;
+  color: #2c2c2c;
+}
+
+.el-button--warning {
+  background-color: #ffd93d;
+  color: #2c2c2c;
+}
+
+.el-button--danger {
+  background-color: #ff6b6b;
+  color: #2c2c2c;
+}
+
+.el-card {
+  background-color: #fffef5;
+  border: 2px dashed #2c2c2c;
+  border-radius: 2px;
+  box-shadow: 4px 4px 0 #4ecdc4;
+  color: #2c2c2c;
+}
+
+.el-input__wrapper,
+.el-textarea__inner,
+.el-select__wrapper {
+  background-color: #fffef5;
+  border: 2px dashed #2c2c2c;
+  border-radius: 2px;
+  box-shadow: 4px 4px 0 #ffd93d;
+  color: #2c2c2c;
+}
+
+.el-input__wrapper.is-focus,
+.el-textarea__inner:focus,
+.el-select__wrapper.is-focused {
+  box-shadow: 6px 6px 0 #ffd93d;
+}
+
+.el-table {
+  background-color: #fffef5;
+  border: 2px dashed #2c2c2c;
+  border-radius: 2px;
+  box-shadow: 4px 4px 0 #4ecdc4;
+  color: #2c2c2c;
+}
+
+.el-table th.el-table__cell,
+.el-table tr,
+.el-table td.el-table__cell {
+  background-color: #fffef5;
+  border-bottom: 2px dashed #2c2c2c;
+  color: #2c2c2c;
+}
+
+.el-dialog {
+  background-color: #fffef5;
+  border: 2px dashed #2c2c2c;
+  border-radius: 4px;
+  box-shadow: 6px 6px 0 #4ecdc4;
+}
+
+.el-pagination {
+  background-color: #fffef5;
+  border: 2px dashed #2c2c2c;
+  border-radius: 2px;
+  box-shadow: 4px 4px 0 #ffd93d;
+  padding: 6px 10px;
+}
+
+.el-tag {
+  background-color: #fffef5;
+  border: 2px dashed #2c2c2c;
+  border-radius: 2px;
+  box-shadow: 2px 2px 0 #ffd93d;
+  color: #2c2c2c;
+}
+
+.el-menu {
+  background-color: #fffef5;
+  border-right: 2px dashed #2c2c2c;
+}
+
+.el-menu-item {
+  color: #2c2c2c;
+  border-radius: 2px;
+}
+
+.el-menu-item.is-active {
+  background-color: #ffd93d;
+  color: #2c2c2c;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .el-button {
+    transition: none;
+  }
+
+  .el-button:hover,
+  .el-button:focus,
+  .el-button:active {
+    transform: none;
+  }
+}
+
+/* Word 导入：拖拽上传区 */
+.el-upload-dragger {
+  background-color: #fffef5;
+  border: 2px dashed #2c2c2c;
+  border-radius: 2px;
+  transition: box-shadow 200ms ease, transform 200ms ease;
+}
+
+.el-upload-dragger:hover {
+  transform: translate(1px, 1px);
+  box-shadow: 3px 3px 0 #ffd93d;
+}
+
+.el-upload-list__item {
+  color: #2c2c2c;
+}

@@ -5,9 +5,9 @@
       <el-menu
         :default-active="activeMenu"
         router
-        background-color="#001529"
-        text-color="rgba(255,255,255,0.65)"
-        active-text-color="#ffffff"
+        background-color="#fffef5"
+        text-color="#2c2c2c"
+        active-text-color="#2c2c2c"
       >
         <template v-for="item in menus" :key="item.path">
           <el-menu-item :index="item.path">{{ item.title }}</el-menu-item>
@@ -89,30 +89,43 @@ function onLogout() {
 }
 
 .layout-aside {
-  background-color: #001529;
+  background-color: #fffef5;
+  border-right: 2px dashed #2c2c2c;
 }
 
 .layout-logo {
   height: 60px;
   line-height: 60px;
   text-align: center;
-  color: #fff;
+  position: relative;
+  color: #2c2c2c;
   font-size: 16px;
   font-weight: 600;
+}
+
+.layout-logo::after {
+  content: '';
+  position: absolute;
+  left: 14%;
+  right: 14%;
+  bottom: 12px;
+  height: 8px;
+  background-color: #ffd93d;
+  z-index: -1;
 }
 
 .layout-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: #fff;
-  border-bottom: 1px solid #e4e7ed;
+  background: #fffef5;
+  border-bottom: 2px dashed #2c2c2c;
 }
 
 .layout-title {
   font-size: 16px;
   font-weight: 600;
-  color: #303133;
+  color: #2c2c2c;
 }
 
 .layout-user {
@@ -122,12 +135,12 @@ function onLogout() {
 }
 
 .layout-username {
-  color: #606266;
+  color: rgba(44, 44, 44, 0.75);
   font-size: 14px;
 }
 
 .layout-main {
   padding: 0;
-  background: #f5f7fa;
+  background: #fffef5;
 }
 </style>

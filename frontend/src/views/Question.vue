@@ -30,6 +30,7 @@
         <el-button type="warning" plain :disabled="!selection.length" @click="openBatchDialog">
           批量移动到题库
         </el-button>
+        <el-button type="success" plain @click="importVisible = true">Word 导入</el-button>
       </div>
       <el-table v-loading="loading" :data="records" border @selection-change="onSelectionChange">
         <el-table-column type="selection" width="45" />
@@ -86,6 +87,8 @@
       @saved="loadData"
     />
 
+    <QuestionImportDialog v-model="importVisible" :banks="banks" @imported="onImported" />
+
     <el-dialog v-model="batchVisible" title="批量移动到题库" width="420px">
       <el-select v-model="batchBankId" placeholder="请选择题库" style="width: 100%">
         <el-option v-for="b in banks" :key="b.id" :label="b.name" :value="b.id" />
@@ -105,6 +108,7 @@ import { listQuestions, deleteQuestion, batchMoveQuestions } from '../api/questi
 import { listAllBanks } from '../api/banks'
 import { listTags } from '../api/tags'
 import QuestionFormDialog from '../components/QuestionFormDialog.vue'
+import QuestionImportDialog from '../components/QuestionImportDialog.vue'
 
 const loading = ref(false)
 const records = ref([])
@@ -128,6 +132,7 @@ const editingQuestion = ref(null)
 const batchVisible = ref(false)
 const batchBankId = ref(null)
 const batchSubmitting = ref(false)
+const importVisible = ref(false)
 
 function cleanParams(q) {
   const p = {}
@@ -195,6 +200,11 @@ function onDelete(row) {
       loadData()
     })
     .catch(() => {})
+}
+
+function onImported() {
+  query.page = 1
+  loadData()
 }
 
 function openBatchDialog() {

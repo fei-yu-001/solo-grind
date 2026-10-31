@@ -6,6 +6,7 @@ import com.ddyu.zhikao.dto.QuestionBatchMoveDTO;
 import com.ddyu.zhikao.dto.QuestionForm;
 import com.ddyu.zhikao.service.AdminGuardService;
 import com.ddyu.zhikao.service.QuestionService;
+import com.ddyu.zhikao.vo.QuestionImportVO;
 import com.ddyu.zhikao.vo.QuestionVO;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Map;
 
@@ -74,5 +76,14 @@ public class QuestionController {
         adminGuardService.checkAdmin();
         int updated = questionService.batchMove(dto);
         return Result.ok(Map.of("updated", updated));
+    }
+
+    /** 从 Word 题库批量导入，只允许管理员 */
+    @PostMapping("/import")
+    public Result<QuestionImportVO> importDocx(@RequestParam("file") MultipartFile file,
+                                               @RequestParam("bankId") Long bankId,
+                                               @RequestParam(value = "difficulty", required = false) Integer difficulty) {
+        adminGuardService.checkAdmin();
+        return Result.ok(questionService.importDocx(file, bankId, difficulty));
     }
 }
