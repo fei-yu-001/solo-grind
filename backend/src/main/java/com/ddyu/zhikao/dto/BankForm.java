@@ -13,8 +13,7 @@ public class BankForm {
     @Size(max = 64, message = "题库名不能超过 64 个字符")
     private String name;
 
-    @NotBlank(message = "组别不能为空")
-    @Pattern(regexp = "本科组|专科组", message = "组别只能是本科组或专科组")
+    @Size(max = 16, message = "组别不能超过 16 个字符")
     private String groupName;
 
     @Size(max = 255, message = "题库说明不能超过 255 个字符")

@@ -96,7 +96,7 @@ public class BankServiceImpl implements BankService {
         checkNameUnique(form.getName(), null);
         QuestionBank bank = new QuestionBank();
         bank.setName(form.getName());
-        bank.setGroupName(form.getGroupName());
+        bank.setGroupName(blankToNull(form.getGroupName()));
         bank.setDescription(form.getDescription());
         bank.setStatus(form.getStatus() == null ? "ENABLED" : form.getStatus());
         bankMapper.insert(bank);
@@ -113,7 +113,7 @@ public class BankServiceImpl implements BankService {
         }
         checkNameUnique(form.getName(), id);
         bank.setName(form.getName());
-        bank.setGroupName(form.getGroupName());
+        bank.setGroupName(blankToNull(form.getGroupName()));
         bank.setDescription(form.getDescription());
         bank.setStatus(form.getStatus() == null ? bank.getStatus() : form.getStatus());
         bankMapper.updateById(bank);
@@ -147,6 +147,10 @@ public class BankServiceImpl implements BankService {
         if (bankMapper.selectCount(wrapper) > 0) {
             throw BizException.conflict("题库名已存在：" + name);
         }
+    }
+
+    private String blankToNull(String s) {
+        return s == null || s.isBlank() ? null : s.trim();
     }
 
     private void fillStatusText(List<BankVO> list) {

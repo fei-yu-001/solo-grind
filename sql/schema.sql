@@ -37,7 +37,7 @@ CREATE TABLE user_profile (
 CREATE TABLE question_bank (
     id          BIGINT       NOT NULL AUTO_INCREMENT COMMENT '主键',
     name        VARCHAR(64)  NOT NULL COMMENT '题库名',
-    group_name  VARCHAR(16)  NOT NULL COMMENT '本科组 / 专科组',
+    group_name  VARCHAR(16)           DEFAULT NULL COMMENT '组别，可选，自定义',
     description VARCHAR(255)          DEFAULT NULL COMMENT '题库说明',
     status      VARCHAR(16)  NOT NULL DEFAULT 'ENABLED' COMMENT 'ENABLED 启用 / DISABLED 停用',
     created_at  DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',

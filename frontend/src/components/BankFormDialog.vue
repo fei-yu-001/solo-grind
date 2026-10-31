@@ -10,8 +10,8 @@
       <el-form-item label="题库名" prop="name">
         <el-input v-model="form.name" maxlength="100" />
       </el-form-item>
-      <el-form-item label="组别" prop="groupName">
-        <el-input v-model="form.groupName" maxlength="50" />
+      <el-form-item label="组别">
+        <el-input v-model="form.groupName" maxlength="16" placeholder="可选，自定义，例如：本科组 / 第一章" />
       </el-form-item>
       <el-form-item label="说明">
         <el-input v-model="form.description" type="textarea" :rows="3" />
@@ -21,6 +21,21 @@
           <el-radio value="ENABLED">启用</el-radio>
           <el-radio value="DISABLED">停用</el-radio>
         </el-radio-group>
+      </el-form-item>
+      <el-form-item v-if="!isEdit" label="导入 Word">
+        <el-upload
+          ref="uploadRef"
+          :auto-upload="false"
+          :limit="1"
+          accept=".docx"
+          :on-change="onFileChange"
+          :on-remove="onFileRemove"
+          :on-exceed="onExceed"
+          drag
+          style="width: 100%"
+        >
+          <div class="upload-tip">可选：拖入 .docx，保存时一起导入题目</div>
+        </el-upload>
       </el-form-item>
     </el-form>
     <template #footer>
@@ -34,6 +49,7 @@
 import { computed, reactive, ref, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import { createBank, updateBank } from '../api/banks'
+import { importQuestions } from '../api/questions'
 
 const props = defineProps({
   modelValue: Boolean,
@@ -42,6 +58,8 @@ const props = defineProps({
 const emit = defineEmits(['update:modelValue', 'saved'])
 
 const formRef = ref()
+const uploadRef = ref()
+const file = ref(null)
 const submitting = ref(false)
 const isEdit = computed(() => !!props.bank)
 
@@ -53,8 +71,21 @@ const form = reactive({
 })
 
 const rules = {
-  name: [{ required: true, message: '请输入题库名', trigger: 'blur' }],
-  groupName: [{ required: true, message: '请输入组别', trigger: 'blur' }]
+  name: [{ required: true, message: '请输入题库名', trigger: 'blur' }]
+}
+
+function onFileChange(uploadFile) {
+  file.value = uploadFile.raw
+}
+
+function onFileRemove() {
+  file.value = null
+}
+
+function onExceed(files) {
+  uploadRef.value.clearFiles()
+  uploadRef.value.handleStart(files[0])
+  file.value = files[0]
 }
 
 watch(
@@ -77,6 +108,8 @@ watch(
 
 function resetForm() {
   formRef.value && formRef.value.clearValidate()
+  file.value = null
+  uploadRef.value && uploadRef.value.clearFiles()
 }
 
 async function onSubmit() {
@@ -87,12 +120,23 @@ async function onSubmit() {
   }
   submitting.value = true
   try {
+    const payload = { ...form, groupName: form.groupName.trim() || null }
     if (props.bank) {
-      await updateBank(props.bank.id, { ...form })
+      await updateBank(props.bank.id, payload)
+      ElMessage.success('保存成功')
     } else {
-      await createBank({ ...form })
+      const bank = await createBank(payload)
+      if (file.value) {
+        try {
+          const data = await importQuestions(file.value, bank.id, 1)
+          ElMessage.success(`题库已创建，导入 ${data.imported} 道题`)
+        } catch (e) {
+          ElMessage.warning('题库已创建，但 Word 导入失败，可在题目页重新导入')
+        }
+      } else {
+        ElMessage.success('保存成功')
+      }
     }
-    ElMessage.success('保存成功')
     emit('update:modelValue', false)
     emit('saved')
   } catch (e) {
@@ -102,3 +146,10 @@ async function onSubmit() {
   }
 }
 </script>
+
+<style scoped>
+.upload-tip {
+  color: #2c2c2c;
+  font-size: 14px;
+}
+</style>

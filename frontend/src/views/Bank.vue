@@ -15,7 +15,9 @@
       </div>
       <el-table v-loading="loading" :data="records" border>
         <el-table-column prop="name" label="题库名" min-width="200" show-overflow-tooltip />
-        <el-table-column prop="groupName" label="组别" width="110" />
+        <el-table-column label="组别" width="110">
+          <template #default="{ row }">{{ row.groupName || '未分组' }}</template>
+        </el-table-column>
         <el-table-column prop="questionCount" label="题目数" width="90" />
         <el-table-column label="状态" width="90">
           <template #default="{ row }">
