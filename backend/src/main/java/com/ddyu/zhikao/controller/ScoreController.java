@@ -35,6 +35,7 @@ public class ScoreController {
                                             @RequestParam(required = false) String keyword,
                                             @RequestParam(defaultValue = "1") long page,
                                             @RequestParam(defaultValue = "10") long size) {
+        adminGuardService.checkAdmin();
         return Result.ok(scoreService.page(paperId, keyword, page, size));
     }
 
@@ -47,6 +48,7 @@ public class ScoreController {
 
     @GetMapping("/stats")
     public Result<StatsVO> stats() {
+        adminGuardService.checkAdmin();
         return Result.ok(scoreService.stats());
     }
 

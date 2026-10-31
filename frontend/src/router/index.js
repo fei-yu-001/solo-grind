@@ -42,7 +42,7 @@ const routes = [
         path: 'scores',
         name: 'scores',
         component: () => import('../views/Score.vue'),
-        meta: { title: '成绩管理' }
+        meta: { title: '成绩管理', adminOnly: true }
       },
       {
         path: 'exam-center',

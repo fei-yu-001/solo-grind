@@ -40,26 +40,21 @@ const route = useRoute()
 const router = useRouter()
 
 const allMenus = [
-  { path: '/dashboard', title: '概览', adminOnly: true },
-  { path: '/banks', title: '题库', adminOnly: true },
-  { path: '/questions', title: '题目', adminOnly: true },
-  { path: '/papers', title: '试卷', adminOnly: true },
-  { path: '/scores', title: '成绩', adminOnly: true },
-  { path: '/exam-center', title: '考试中心', adminOnly: false, studentOnly: true },
-  { path: '/my-scores', title: '我的成绩', adminOnly: true, studentOnly: true }
+  { path: '/dashboard', title: '概览', roles: ['ADMIN'] },
+  { path: '/banks', title: '题库', roles: ['ADMIN'] },
+  { path: '/questions', title: '题目', roles: ['ADMIN'] },
+  { path: '/papers', title: '试卷', roles: ['ADMIN'] },
+  { path: '/scores', title: '成绩', roles: ['ADMIN'] },
+  { path: '/exam-center', title: '考试中心', roles: ['ADMIN', 'STUDENT'] },
+  { path: '/my-scores', title: '我的成绩', roles: ['STUDENT'] }
 ]
 
 const user = getLoginUser()
 const nickname = (user && user.nickname) || ''
 const username = (user && user.username) || ''
-const isAdmin = (user && user.role) === 'ADMIN'
+const role = (user && user.role) || ''
 
-const menus = allMenus.filter((item) => {
-  if (isAdmin) {
-    return !item.studentOnly || item.path === '/exam-center'
-  }
-  return !item.adminOnly
-})
+const menus = allMenus.filter((item) => item.roles.includes(role))
 const activeMenu = computed(() => route.path)
 const pageTitle = computed(() => route.meta.title || '')
 
