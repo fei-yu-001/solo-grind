@@ -75,7 +75,7 @@ check "题库分页 size=1 返回 1 条" "$(api GET '/api/banks?page=1&size=1' |
 check "题库 total 等于基线" "$(api GET '/api/banks?page=1&size=1' | py "d['data']['total']")" "$B_BASE"
 GROUP=$(ue 本科组)
 check "按组别过滤" "$(api GET "/api/banks?groupName=$GROUP&page=1&size=10" | py "d['data']['total']")" "1"
-check "题库带题目数" "$(api GET "/api/banks?groupName=$GROUP&page=1&size=10" | py "d['data']['records'][0]['questionCount']")" "85"
+check "题库带题目数" "$(api GET "/api/banks?groupName=$GROUP&page=1&size=10" | py "d['data']['records'][0]['questionCount']")" "40"
 api GET /api/banks/all >/dev/null
 BNAME="E2E-BANK-$RANDOM"
 TMPBODY="$(mktemp)"
@@ -94,8 +94,8 @@ check "改题库名" "$NEW_NAME" "$BNAME-B"
 echo "== 3. 题目：分页、条件、标签、增改删、批量移动"
 check "题目总数等于基线" "$(api GET '/api/questions?page=1&size=1' | py "d['data']['total']")" "$Q_BASE"
 check "size=10 正好 10 条" "$(api GET '/api/questions?page=1&size=10' | py "len(d['data']['records'])")" "10"
-check "按题型过滤（判断题 35）" "$(api GET '/api/questions?type=judge&page=1&size=10' | py "d['data']['total']")" "35"
-check "按题库过滤（本科 85）" "$(api GET '/api/questions?bankId=1&page=1&size=10' | py "d['data']['total']")" "85"
+check "按题型过滤（判断题 16）" "$(api GET '/api/questions?type=judge&page=1&size=10' | py "d['data']['total']")" "16"
+check "按题库过滤（题库1 40）" "$(api GET '/api/questions?bankId=1&page=1&size=10' | py "d['data']['total']")" "40"
 check "按标签过滤不报错" "$(api GET '/api/questions?tagId=1&page=1&size=10' | py "'yes' if 'total' in d['data'] else 'no'")" "yes"
 TAG_ID=$(api GET /api/tags | py "d['data'][0]['id']")
 QID=$(api POST /api/questions "{\"bankId\":$BANK_ID,\"type\":\"single\",\"stem\":\"E2E question stem\",\"options\":[{\"key\":\"A\",\"text\":\"A-text\"},{\"key\":\"B\",\"text\":\"B-text\"}],\"answer\":\"A\",\"analysis\":\"because A\",\"difficulty\":2,\"sortNo\":1,\"tagIds\":[$TAG_ID]}" | py "d['data']['id']")

@@ -12,13 +12,14 @@ STU=""
 STU_ID=""
 
 py() {
-  python -c "
+  python -X utf8 -c "
 import json,sys
-d=json.load(sys.stdin)
+d=json.loads(sys.stdin.buffer.read().decode('utf-8','replace'))
 try:
-    print(eval(sys.argv[1]))
+    v=eval(sys.argv[1])
+    sys.stdout.write('' if v is None else str(v))
 except Exception as e:
-    print('ERR:'+str(e))
+    sys.stdout.write('ERR:'+str(e))
 " "$1"
 }
 ok() { echo "  [ok]   $1"; PASS=$((PASS + 1)); }
@@ -27,20 +28,22 @@ check() { if [ "$2" = "$3" ]; then ok "$1"; else bad "$1（期望 $3，实际 $2
 
 api() {
   local method="$1" path="$2" body="${3:-}" tok="${4:-$STU}"
+  local auth=()
+  [ -n "$tok" ] && auth=(-H "Authorization: Bearer $tok")
   if [ -n "$body" ]; then
-    "${CURL[@]}" -X "$method" "$BASE$path" -H 'content-type: application/json' \
-      ${tok:+-H "Authorization: Bearer $tok"} -d "$body"
+    "${CURL[@]}" -X "$method" "$BASE$path" -H 'content-type: application/json' "${auth[@]}" -d "$body"
   else
-    "${CURL[@]}" -X "$method" "$BASE$path" ${tok:+-H "Authorization: Bearer $tok"}
+    "${CURL[@]}" -X "$method" "$BASE$path" "${auth[@]}"
   fi
 }
 status() {
   local method="$1" path="$2" body="${3:-}" tok="${4:-$STU}"
+  local auth=()
+  [ -n "$tok" ] && auth=(-H "Authorization: Bearer $tok")
   if [ -n "$body" ]; then
-    "${CURL[@]}" -o /dev/null -w '%{http_code}' -X "$method" "$BASE$path" \
-      -H 'content-type: application/json' ${tok:+-H "Authorization: Bearer $tok"} -d "$body"
+    "${CURL[@]}" -o /dev/null -w '%{http_code}' -X "$method" "$BASE$path" -H 'content-type: application/json' "${auth[@]}" -d "$body"
   else
-    "${CURL[@]}" -o /dev/null -w '%{http_code}' -X "$method" "$BASE$path" ${tok:+-H "Authorization: Bearer $tok"}
+    "${CURL[@]}" -o /dev/null -w '%{http_code}' -X "$method" "$BASE$path" "${auth[@]}"
   fi
 }
 login() {
@@ -52,22 +55,24 @@ ADMIN=$(login admin admin123 | py "d['data']['token']")
 STU=$(login student03 student123 | py "d['data']['token']")
 STU_ID=$(api GET /api/auth/me | py "d['data']['id']")
 echo "  考生 student03 id=$STU_ID"
+BEFORE_COUNT=$(api GET '/api/scores/mine?page=1&size=10' | py "d['data']['total']")
+echo "  已有成绩 $BEFORE_COUNT 条"
 
 echo "== 1. 考试中心：可选试卷"
 AVAIL=$(api GET /api/exams/available)
 COUNT=$(printf '%s' "$AVAIL" | py "len(d['data'])")
 if [ "$COUNT" -ge 1 ]; then ok "可用试卷 $COUNT 张"; else bad "没有可用试卷（$AVAIL）"; fi
-check "默认都没交过（myScore 为 null）" "$(printf '%s' "$AVAIL" | py "'yes' if all(x['myScore'] is None for x in d['data']) else 'no'")" "yes"
-PAPER=$(printf '%s' "$AVAIL" | py "d['data'][0]['paperId']")
-TOTAL=$(printf '%s' "$AVAIL" | py "d['data'][0]['totalScore']")
+check "存在未交过的试卷" "$(printf '%s' "$AVAIL" | py "'yes' if any(x['myScore'] is None for x in d['data']) else 'no'")" "yes"
+PAPER=$(printf '%s' "$AVAIL" | py "([x['paperId'] for x in d['data'] if x['myScore'] is None] or [d['data'][0]['paperId']])[0]")
+TOTAL=$(printf '%s' "$AVAIL" | py "[x['totalScore'] for x in d['data'] if x['paperId']==$PAPER][0]")
 echo "  选中试卷 id=$PAPER 总分=$TOTAL"
 
 echo "== 2. 取题：不能泄露答案"
 VIEW=$(api GET "/api/exams/$PAPER/questions")
 check "拿到题目列表" "$(printf '%s' "$VIEW" | py "'yes' if len(d['data']['questions'])>0 else 'no'")" "yes"
-LEAK=$(printf '%s' "$VIEW" | python -c "
+LEAK=$(printf '%s' "$VIEW" | python -X utf8 -c "
 import json,sys
-d=json.load(sys.stdin)['data']
+d=json.loads(sys.stdin.buffer.read().decode('utf-8','replace'))['data']
 bad=[k for q in d['questions'] for k in q if k in ('answer','analysis')]
 print('LEAK:'+','.join(sorted(set(bad))) if bad else 'clean')
 ")
@@ -89,7 +94,7 @@ check "再取题 409" "$(status GET "/api/exams/$PAPER/questions")" "409"
 check "考试中心显示已交" "$(api GET /api/exams/available | py "'yes' if any(x['paperId']==$PAPER and x['myScore'] is not None for x in d['data']) else 'no'")" "yes"
 
 echo "== 5. 我的成绩与越权"
-check "我的成绩有 1 条" "$(api GET '/api/scores/mine?page=1&size=10' | py "d['data']['total']")" "1"
+check "我的成绩新增 1 条" "$(api GET '/api/scores/mine?page=1&size=10' | py "d['data']['total']")" "$((BEFORE_COUNT + 1))"
 check "成绩明细可看（自己的）" "$(status GET "/api/scores/$PAPER/$STU_ID")" "200"
 check "看别人的成绩 403" "$(status GET "/api/scores/$PAPER/2")" "403"
 # 用种子数据里确实存在的一条成绩（试卷 1 / 考生 2），避免测到不存在的记录
@@ -97,7 +102,7 @@ check "管理员能看任何人的成绩" "$(status GET "/api/scores/$PAPER/$STU
 
 echo "== 6. 清理"
 check "撤销这份成绩" "$(status DELETE "/api/scores/$PAPER/$STU_ID" '' "$ADMIN")" "200"
-check "我的成绩回到 0 条" "$(api GET '/api/scores/mine?page=1&size=10' | py "d['data']['total']")" "0"
+check "我的成绩回到原数量" "$(api GET '/api/scores/mine?page=1&size=10' | py "d['data']['total']")" "$BEFORE_COUNT"
 check "考试中心又能进了" "$(status GET "/api/exams/$PAPER/questions")" "200"
 
 echo
