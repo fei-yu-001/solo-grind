@@ -21,7 +21,7 @@ def tight(text):
     if not text:
         return text
     text = str(text).replace('`', '')
-    m = re.match(r'^(\d+(?:\.\d+)*\.?)[ 	]+', text)
+    m = re.match(r'^(\d+(?:\.\d+)*\.)[ 	]+', text)
     prefix = m.group(0) if m else ''
     body = text[len(prefix):]
     return prefix + _TR.sub('', _TL.sub('', body))
