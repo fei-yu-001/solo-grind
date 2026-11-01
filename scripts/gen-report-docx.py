@@ -451,7 +451,7 @@ h1('四、详细实验过程')
 
 h2('（一）项目初始化')
 para('后端用Spring Initializr创建，Group为com.ddyu，Artifact为zhikao，JDK 21，依赖Spring Web、Validation、MyBatis-Plus、MySQL Driver、Spring Data Redis、Lombok。前端用npm create vite创建Vue 3工程，再安装Element Plus、Vue Router、axios。')
-code_block(read('backend/pom.xml', '<parent>', '</dependencies>', 32), size=8)
+para('pom.xml中锁定Spring Boot 3.2.5、MyBatis-Plus 3.5.9，并引入MySQL驱动、spring-boot-starter-data-redis、validation与lombok。')
 
 h2('（二）建表与测试数据')
 para('执行sql/schema.sql建9张表，再执行sql/data.sql导入测试数据。以user_profile为例，user_id加唯一索引保证一对一：')
@@ -460,37 +460,39 @@ para('导入后共4个账号、2个408题库、80道题、2份试卷、60条作�
 
 h2('（三）统一返回与异常')
 para('所有接口返回Result<T>，业务异常统一抛BizException，由GlobalExceptionHandler转成对应HTTP状态码，Controller里不写try-catch。')
-code_block(read('backend/src/main/java/com/ddyu/zhikao/common/GlobalExceptionHandler.java', None, None, 42), size=8)
+code_block(read('backend/src/main/java/com/ddyu/zhikao/common/GlobalExceptionHandler.java', '@ExceptionHandler(BizException.class)', 'return ResponseEntity', 10), size=8)
 
 h2('（四）登录认证与Redis令牌')
 para('登录时用BCrypt校验密码，通过后生成32位UUID作为令牌，把用户信息写入Redis，key为login:token:<token>，有效期30分钟，每次请求续期。')
-code_block(read('backend/src/main/java/com/ddyu/zhikao/service/impl/AuthServiceImpl.java', 'public LoginVO login', 'public void logout'), size=8)
+code_block(read('backend/src/main/java/com/ddyu/zhikao/service/impl/AuthServiceImpl.java', 'public LoginVO login', None, 18), size=8)
 shot('Redis中login:token:*的键与TTL', '图 4-1 Redis 登录令牌', height=3.6)
 
 h2('（五）题库与题目CRUD')
 para('题库列表要显示题目数量，用相关子查询一次查出，避免N+1；删除时Service先校验题库下是否还有题，有则返回409。')
-code_block(read('backend/src/main/resources/mapper/BankMapper.xml', '<sql id="bankVoColumns">', '</sql>'), size=8)
 shot('题库管理页面，含筛选栏、表格与分页', '图 4-2 题库管理', height=4.2)
 
 h2('（六）Word题库导入')
 para('docx本质是zip包，用JDK自带ZipFile解压出word/document.xml，按段落提取w:t文本，再解析题干、选项、答案、题型，不引入第三方库。任意一题不合法就收集错误并整批回滚。')
-code_block(read('backend/src/main/java/com/ddyu/zhikao/service/impl/QuestionServiceImpl.java', 'public QuestionImportVO importDocx', 'private void'), size=8)
+code_block(read('backend/src/main/java/com/ddyu/zhikao/service/impl/QuestionServiceImpl.java', 'public QuestionImportVO importDocx', None, 20), size=8)
 shot('Word导入弹窗与导入结果', '图 4-3 Word 导入', height=4.0)
-shot('错误文件导入失败，逐条列出错误', '图 4-4 导入回滚', height=3.6)
 
 h2('（七）组卷与交卷判分')
 para('组卷按题型分别随机抽题，SQL用ORDER BY RAND() LIMIT，题序按判断→单选→多选排列。交卷在一个事务里完成状态校验、重复交卷拦截、逐题判分、批量落库、清排行榜缓存。')
-code_block(read('backend/src/main/java/com/ddyu/zhikao/service/impl/AnswerServiceImpl.java', 'int grade', 'private String toChosenJson'), size=8)
-shot('考场页面，倒计时与答题卡', '图 4-5 在线考场', height=4.2)
+table(['题型', '规则'], [
+    ['单选 / 判断', '与标准答案完全一致得满分，否则0分'],
+    ['多选', '全对满分；少选（真子集）得一半向下取整；多选或错选0分'],
+    ['未作答', '0分，但仍落库并计入未答数'],
+], cap='表 4-1 判分规则', widths=[3.6, 10.4])
+shot('考场页面，倒计时与答题卡', '图 4-4 在线考场', height=4.2)
 
 h2('（八）成绩聚合与排行榜')
 para('成绩不单独建表，从answer_record聚合，一条SQL算出总分、正确数、未答数、正确率。排行榜按总分倒序，结果写入Redis，交卷时删除缓存。')
-code_block(read('backend/src/main/resources/mapper/ScoreMapper.xml', '<sql id="scoreAggregates">', '</sql>'), size=8)
-shot('成绩管理页面与逐题明细', '图 4-6 成绩管理', height=4.2)
+code_block(read('backend/src/main/resources/mapper/ScoreMapper.xml', '<sql id="scoreAggregates">', '</sql>'), size=7.5)
+shot('成绩管理页面与逐题明细', '图 4-5 成绩管理', height=4.2)
 
 h2('（九）前端请求封装')
 para('开发时Vite把/api代理到8080，避免跨域。axios统一加Bearer令牌，响应拦截器判断code，成功直接返回data，失败弹提示，401跳登录页。')
-code_block(read('frontend/src/api/request.js', None, None, 38), size=8)
+code_block(read('frontend/src/api/request.js', None, None, 22), size=8)
 
 # ---------------------------------------------------------------- 五、核心源码
 h1('五、核心源代码')
@@ -505,16 +507,16 @@ table(['层', '包 / 目录', '文件数', '代表文件'], [
 ], cap='表 5-1 分层文件清单', widths=[2.6, 4.0, 2.2, 5.4])
 
 h2('（一）Entity：SysUser')
-code_block(read('backend/src/main/java/com/ddyu/zhikao/entity/SysUser.java'), size=8)
+code_block(read('backend/src/main/java/com/ddyu/zhikao/entity/SysUser.java', 'public class SysUser'), size=8)
 
-h2('（二）Mapper XML：ScoreMapper 聚合查询')
-code_block(read('backend/src/main/resources/mapper/ScoreMapper.xml'), size=8)
+h2('（二）Mapper XML：成绩聚合查询')
+code_block(read('backend/src/main/resources/mapper/ScoreMapper.xml', '<select id="selectScorePage"', '</select>'), size=8)
 
-h2('（三）Service：交卷判分')
-code_block(read('backend/src/main/java/com/ddyu/zhikao/service/impl/AnswerServiceImpl.java'), size=7.5)
+h2('（三）Service：交卷判分核心方法')
+code_block(read('backend/src/main/java/com/ddyu/zhikao/service/impl/AnswerServiceImpl.java', 'int grade', 'private String toChosenJson'), size=8)
 
-h2('（四）Controller：AnswerController')
-code_block(read('backend/src/main/java/com/ddyu/zhikao/controller/AnswerController.java'), size=8)
+h2('（四）Controller：交卷接口')
+code_block(read('backend/src/main/java/com/ddyu/zhikao/controller/AnswerController.java', '@PostMapping("/submit")', 'return Result.ok'), size=8)
 
 # ---------------------------------------------------------------- 六、运行测试
 h1('六、运行测试过程')
@@ -522,7 +524,6 @@ h1('六、运行测试过程')
 h2('（一）启动')
 para('启动顺序为MySQL → Redis →后端8080 →前端5173。项目提供scripts/dev.sh一键启动，启动成功后访问http://127.0.0.1:5173。')
 shot('后端启动日志，Started ZhikaoApplication', '图 6-1 后端启动', height=3.6)
-shot('前端Vite启动日志', '图 6-2 前端启动', height=3.0)
 
 h2('（二）Postman接口测试')
 table(['接口', '请求要点', '预期', '实际'], [
@@ -533,8 +534,8 @@ table(['接口', '请求要点', '预期', '实际'], [
     ['POST /api/questions/import', 'multipart + bankId', '200，imported=20', '通过'],
     ['POST /api/answers/submit', '同一试卷交两次', '第二次409', '通过'],
 ], cap='表 6-1 Postman 测试记录', widths=[5.6, 4.6, 5.0, 2.0])
-shot('Postman登录接口，请求体与返回token', '图 6-3 Postman 登录', height=3.6)
-shot('Postman无令牌访问返回401', '图 6-4 Postman 未授权', height=3.2)
+shot('Postman登录接口，请求体与返回token', '图 6-2 Postman 登录', height=3.6)
+shot('Postman无令牌访问返回401', '图 6-3 Postman 未授权', height=3.2)
 
 h2('（三）页面功能演示')
 table(['操作', '验证点'], [
@@ -547,10 +548,9 @@ table(['操作', '验证点'], [
     ['管理员看成绩明细', '逐题显示对错与得分'],
     ['个人资料改昵称', '顶栏昵称立即更新'],
 ], cap='表 6-2 页面功能演示', widths=[6.0, 8.0])
-shot('管理员概览页', '图 6-5 概览', height=3.8)
-shot('新增题库弹窗，组别填“第一章”', '图 6-6 新增题库', height=3.8)
-shot('考试中心，显示可考试卷与我的得分', '图 6-7 考试中心', height=3.8)
-shot('交卷后的成绩页', '图 6-8 交卷成绩', height=3.8)
+shot('管理员概览页', '图 6-4 概览', height=3.8)
+shot('考试中心，显示可考试卷与我的得分', '图 6-5 考试中心', height=3.8)
+shot('交卷后的成绩页', '图 6-6 交卷成绩', height=3.8)
 
 h2('（四）多表查询')
 para('成绩聚合一条SQL同时关联answer_record、exam_paper、sys_user，算出总分、正确数、未答数和正确率：')
@@ -569,7 +569,7 @@ table(['试卷', '考生', '总分', '正确', '正确率'], [
     ['408数据结构与计算机组成原理', '陈同学', '68', '12', '0.60'],
     ['408操作系统与计算机网络', '王同学', '84', '16', '0.80'],
 ], cap='表 6-3 成绩聚合结果', widths=[7.4, 2.6, 1.8, 1.8, 1.8])
-shot('Navicat执行聚合SQL的结果', '图 6-9 多表查询', height=3.8)
+shot('Navicat执行聚合SQL的结果', '图 6-7 多表查询', height=3.8)
 
 h2('（五）Redis缓存')
 code_block('''127.0.0.1:6379> KEYS login:token:*
@@ -580,7 +580,6 @@ code_block('''127.0.0.1:6379> KEYS login:token:*
 (integer) 1745
 127.0.0.1:6379> KEYS cache:ranking:*
 1) "cache:ranking:1"''', size=8)
-shot('redis-cli查看三类缓存key与TTL', '图 6-10 Redis 缓存', height=3.4)
 
 h2('（六）异常处理')
 table(['场景', '状态码', '返回信息'], [
@@ -591,7 +590,7 @@ table(['场景', '状态码', '返回信息'], [
     ['重复交卷', '409', '同一考生同一试卷只能交一次卷'],
     ['用户名重复注册', '400', '用户名已被注册，请换一个'],
 ], cap='表 6-4 异常处理场景', widths=[6.2, 2.4, 5.4])
-shot('重复交卷返回409', '图 6-11 重复交卷', height=3.2)
+shot('重复交卷返回409', '图 6-8 重复交卷', height=3.2)
 
 h2('（七）自动化测试')
 para('三个端到端脚本用curl直接打接口并断言，共87条断言，覆盖登录、权限、题库、题目、试卷、考试、交卷、成绩、缓存与异常。')
@@ -600,7 +599,7 @@ table(['脚本', '覆盖内容', '断言', '结果'], [
     ['e2e-extra.sh', '批量移动、撤销成绩、排行榜缓存、边界校验', '18', '通过'],
     ['e2e-exam-room.sh', '考试中心、进考场、答题、交卷、我的成绩', '18', '通过'],
 ], cap='表 6-5 自动化测试结果', widths=[4.6, 7.4, 1.6, 1.6])
-shot('终端执行三个e2e脚本全部通过', '图 6-12 自动化测试', height=3.2)
+shot('终端执行三个e2e脚本全部通过', '图 6-9 自动化测试', height=3.2)
 
 # ---------------------------------------------------------------- 七、实验总结
 h1('七、实验总结')
