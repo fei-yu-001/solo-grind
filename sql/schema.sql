@@ -1,4 +1,4 @@
--- 智考 · 刷题考试系统 · 建表脚本
+-- 赛博进京赶考 · 刷题考试系统 · 建表脚本
 -- MySQL 8.0，字符集 utf8mb4
 -- 关系覆盖：一对一（sys_user ↔ user_profile）
 --           一对多（question_bank → question，exam_paper → answer_record，sys_user → answer_record）

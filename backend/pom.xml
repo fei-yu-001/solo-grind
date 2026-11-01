@@ -15,7 +15,7 @@
     <artifactId>zhikao</artifactId>
     <version>1.0.0</version>
     <name>zhikao</name>
-    <description>智考刷题考试系统 - SpringBoot + MyBatis-Plus + MySQL + Redis + Vue</description>
+    <description>赛博进京赶考系统 - SpringBoot + MyBatis-Plus + MySQL + Redis + Vue</description>
 
     <properties>
         <java.version>21</java.version>

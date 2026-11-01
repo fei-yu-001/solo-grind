@@ -115,7 +115,7 @@ width = 1560
 svg = [
     f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}">',
     f'<rect width="{width}" height="{height}" fill="#fafafa"/>',
-    f'<text x="40" y="34" font-family="{FONT}" font-size="22" font-weight="700" fill="#303133">智考刷题系统 E-R 图（9 张表，含一对一 / 一对多 / 多对多）</text>',
+    f'<text x="40" y="34" font-family="{FONT}" font-size="22" font-weight="700" fill="#303133">赛博进京赶考系统 E-R 图（9 张表，含一对一 / 一对多 / 多对多）</text>',
     boxes,
 ]
 

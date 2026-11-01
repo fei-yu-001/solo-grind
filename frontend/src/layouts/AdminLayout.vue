@@ -1,7 +1,7 @@
 <template>
   <el-container class="layout">
     <el-aside width="200px" class="layout-aside">
-      <div class="layout-logo">智考刷题系统</div>
+      <div class="layout-logo">赛博进京赶考</div>
       <el-menu
         :default-active="activeMenu"
         router

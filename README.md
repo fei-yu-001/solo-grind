@@ -1,4 +1,4 @@
-# 智考 · 刷题考试系统
+# 赛博进京赶考系统
 
 第 17 届市调大赛题库的刷题与模考后台。Spring Boot + MyBatis-Plus + MySQL + Redis + Vue 3 前后端分离。
 
