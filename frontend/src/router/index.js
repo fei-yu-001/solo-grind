@@ -10,6 +10,12 @@ const routes = [
     meta: { public: true, title: '登录' }
   },
   {
+    path: '/register',
+    name: 'register',
+    component: () => import('../views/Register.vue'),
+    meta: { public: true, title: '注册' }
+  },
+  {
     path: '/',
     component: AdminLayout,
     redirect: '/dashboard',
@@ -18,7 +24,7 @@ const routes = [
         path: 'dashboard',
         name: 'dashboard',
         component: () => import('../views/Dashboard.vue'),
-        meta: { title: '概览' }
+        meta: { title: '概览', adminOnly: true }
       },
       {
         path: 'banks',
@@ -85,7 +91,7 @@ router.beforeEach((to) => {
     return { path: '/' }
   }
   if (to.meta.adminOnly && !isAdmin()) {
-    return { path: '/scores' }
+    return { path: '/exam-center' }
   }
   return true
 })

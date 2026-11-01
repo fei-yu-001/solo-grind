@@ -2,8 +2,10 @@ package com.ddyu.zhikao.controller;
 
 import com.ddyu.zhikao.common.Result;
 import com.ddyu.zhikao.dto.LoginDTO;
+import com.ddyu.zhikao.dto.RegisterDTO;
 import com.ddyu.zhikao.service.AuthService;
 import com.ddyu.zhikao.vo.LoginVO;
+import com.ddyu.zhikao.vo.RegisterVO;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +28,12 @@ public class AuthController {
     @PostMapping("/login")
     public Result<LoginVO> login(@Valid @RequestBody LoginDTO dto) {
         return Result.ok(authService.login(dto.getUsername(), dto.getPassword()));
+    }
+
+    /** 考生自助注册，公开接口，不发令牌 */
+    @PostMapping("/register")
+    public Result<RegisterVO> register(@Valid @RequestBody RegisterDTO dto) {
+        return Result.ok(authService.register(dto));
     }
 
     @PostMapping("/logout")

@@ -1,6 +1,8 @@
 package com.ddyu.zhikao.service;
 
+import com.ddyu.zhikao.dto.RegisterDTO;
 import com.ddyu.zhikao.vo.LoginVO;
+import com.ddyu.zhikao.vo.RegisterVO;
 
 public interface AuthService {
 
@@ -12,4 +14,7 @@ public interface AuthService {
 
     /** 当前登录用户信息 */
     LoginVO me();
+
+    /** 考生自助注册，返回公开身份信息，不发令牌 */
+    RegisterVO register(RegisterDTO dto);
 }

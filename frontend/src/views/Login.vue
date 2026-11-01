@@ -1,7 +1,7 @@
 <template>
   <div class="login-page">
     <el-card class="login-card">
-      <h2 class="login-title">智考刷题系统</h2>
+      <h2 class="login-title">赛博进京赶考</h2>
       <el-form ref="formRef" :model="form" :rules="rules" label-width="0" @keyup.enter="onSubmit">
         <el-form-item prop="username">
           <el-input v-model="form.username" placeholder="用户名" size="large" />
@@ -22,6 +22,9 @@
         </el-form-item>
       </el-form>
       <div class="login-tip">演示账号：admin / admin123（管理员）、student01 / student123（考生）</div>
+      <div class="login-switch">
+        还没有账号？<router-link to="/register">注册一个</router-link>
+      </div>
     </el-card>
   </div>
 </template>
@@ -60,7 +63,8 @@ async function onSubmit() {
     setLoginInfo(data)
     ElMessage.success('登录成功')
     const redirect = route.query.redirect
-    router.push(redirect ? String(redirect) : '/dashboard')
+    const home = data.role === 'ADMIN' ? '/dashboard' : '/exam-center'
+    router.push(redirect ? String(redirect) : home)
   } catch (e) {
     // 错误提示已由 request 拦截器统一弹出
   } finally {
@@ -129,5 +133,23 @@ async function onSubmit() {
 
 .login-btn {
   width: 100%;
+}
+
+.login-switch {
+  margin-top: 8px;
+  text-align: center;
+  color: rgba(44, 44, 44, 0.75);
+  font-size: 13px;
+}
+
+.login-switch a {
+  color: #2c2c2c;
+  text-decoration: none;
+  border-bottom: 2px dashed #ff6b6b;
+  padding-bottom: 1px;
+}
+
+.login-switch a:hover {
+  background-color: #ffd93d;
 }
 </style>
